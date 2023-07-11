@@ -35,19 +35,16 @@ example {A : Type _} [Semiring A] [IsFormallyReal A] {I : Type _} {S : Finset I}
 example {A : Type _} [Semiring A] [IsFormallyReal A] {n : ℕ} {f : Fin n → A} (h : ∑ i, (f i) ^ 2 = 0) {i : Fin n} : f i = 0 := by
   sorry
 
-lemma sum_of_squares_head_tail [Semiring A] : (head: A) → (tail: List A) → sum_of_squares (head :: tail) = (sum_of_squares ([head])) + (sum_of_squares tail) := by
-  intro head tail
+@[simp] lemma sum_of_squares_head_tail [Semiring A] : (head: A) → (tail: List A) → sum_of_squares (head :: tail) = (sum_of_squares ([head])) + (sum_of_squares tail) := by
   simp [sum_of_squares]
 
-example {F : Type _} [Semiring A] (nt: (1 : A) ≠ (0 : A)) : IsFormallyReal A → ¬ (∃ L : List A, 1 + sum_of_squares L = 0) := by
+example {F : Type _} [Semiring A] [Nontrivial A] : IsFormallyReal A → ¬ (∃ L : List A, 1 + sum_of_squares L = 0) := by
   intro h ⟨l, hL⟩
   have h' := h.is_formally_real (1 :: l)
   have h'' := sum_of_squares_head_tail 1 l
   rw [h''] at h'
   simp [sum_of_squares] at h'
-  have h''' := h' hL
-  have := And.left h'''
-  contradiction
+  cases h' hL
 
 /- Alternate characterisation of formally real semifields -/
 
