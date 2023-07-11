@@ -32,6 +32,9 @@ example {A : Type _} [Semiring A] [IsFormallyReal A] {I : Type _} {S : Finset I}
   simp [sum_of_squares] at this
   exact this h i hi
 
+example {A : Type _} [Semiring A] [IsFormallyReal A] {I : Type _} {n : ℕ} {f : Fin n → A} (h : ∑ i, (f i) ^ 2 = 0) {i : Fin n} : f i = 0 := by
+  sorry
+
 /- Alternate characterisation of formally real semifields -/
 
 example {F : Type _} [h : Semifield F] : IsFormallyReal F ↔ ¬ (∃ L : List F, 1 + sum_of_squares L = 0) := by
