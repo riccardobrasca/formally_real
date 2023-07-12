@@ -85,6 +85,17 @@ def sum_sq_neq_minus_one' {A : Type _} [Semifield A] [ntA : Nontrivial A] :
 /- As an example, we show that ordered semirings are formally real. -/
 
 -- **TASK 1:** Prove the above claim.
+example {A : Type _} [LinearOrderedRing A] : IsFormallyReal A where
+  is_formally_real := fun (L : Multiset A) (sum_sq_zero: sum_of_squares L = 0) ↦ by
+    intro a a_in_L
+    by_contra c
+    have a_sq_pos : 0 < a ^ 2 := by exact Iff.mpr (sq_pos_iff a) c
+    have h : a ^ 2 + sum_of_squares (L.erase a) = sum_of_squares L := by apply Multiset.sum_map_erase a_in_L
+    rw [sum_sq_zero] at h
+    have sum_sq_nonneg : 0 ≤ sum_of_squares (L.erase a) := by sorry
+    have sum_sq_pos: 0 < a ^ 2 + sum_of_squares (L.erase a) := by exact add_pos_of_pos_of_nonneg a_sq_pos sum_sq_nonneg
+    have : a ^ 2 + sum_of_squares (L.erase a) ≠ 0 := by exact ne_of_gt sum_sq_pos
+    contradiction
 
 /- Next, we show that a non-trivial formally real semiring is of characteristic 0. -/
 
