@@ -40,7 +40,25 @@ section ppties_of_formally_real_semirings
 More generally, if `A` is a formally real nontrivial *semiring* (so `-1` does not make sense in `A`), then we prove that there does *not* exist a sum of squares `S` in `A` such that `1 + S = 0`. -/
 
 def sum_sq_neq_minus_one {A : Type _} [Semiring A] [ntA : Nontrivial A] : IsFormallyReal A → (∀ n : ℕ, ∀ f : Fin n → A, 1 + sum_of_squares f ≠ 0) := by
+  intro H n f
+  by_contra hf
+  let S := 1 + sum_of_squares f
+  have hS1 : S = 1 + sum_of_squares f := by rfl
+  have hS2 : is_sum_of_squares S := by
+    apply sum_sq_add_sum_sq_is_sum_sq 1 (sum_of_squares f)
+    use 1
+    use fun i => 1
+    simp [sum_of_squares]
+    use n, f
+  have hS3 : S = 0 := sorry
+  rcases hS2 with ⟨ m, g, hg ⟩
+  rw [hS3] at hg
+  have g_trivial : ∀ i, g i = 0 := by 
+    apply IsFormallyReal.is_formally_real
+    exact hg
+  
   sorry
+  
 
 /- As an example, we show that ordered semirings are formally real. -/
 
