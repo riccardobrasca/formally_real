@@ -7,14 +7,16 @@ open BigOperators
 
 /- We define formally real semirings. To do so, we define what it means to be a sum of squares in a semiring. -/
 
-def sum_of_squares {A : Type _} [Semiring A] {n : ℕ} : (Fin n → A) → A :=
-  fun f => ∑ i , (f i) ^ 2
+def sum_of_squares {A : Type _} [Semiring A] : Multiset A → A :=
+  fun M => (M.map (.^2)).sum
+  -- fun f => ∑ i , (f i) ^ 2
 
 -- notation "sum_sq" => sum_of_squares
 
 @[mk_iff]
 class IsFormallyReal (A : Type _) [Semiring A] : Prop where
-  is_formally_real : ∀ (n : ℕ), ∀ (f : Fin n → A), (sum_of_squares f = 0) → (∀ i, f i = 0)
+  is_formally_real : ∀ L : Multiset A, sum_of_squares L = 0 → (∀ x ∈ L, x = 0)
+  -- ∀ (n : ℕ), ∀ (f : Fin n → A), (sum_of_squares f = 0) → (∀ i, f i = 0)
 
 /- Next, we give basic properties of sums of squares in semirings. -/
 
@@ -39,8 +41,16 @@ section ppties_of_formally_real_semirings
 
 More generally, if `A` is a formally real nontrivial *semiring* (so `-1` does not make sense in `A`), then we prove that there does *not* exist a sum of squares `S` in `A` such that `1 + S = 0`. -/
 
-def sum_sq_neq_minus_one {A : Type _} [Semiring A] [ntA : Nontrivial A] : IsFormallyReal A → (∀ n : ℕ, ∀ f : Fin n → A, 1 + sum_of_squares f ≠ 0) := by
-  sorry
+def sum_sq_neq_minus_one {A : Type _} [Semiring A] [ntA : Nontrivial A] : IsFormallyReal A → ¬(∃ S ∈ cone_of_squares A, S + 1 = 0) := by
+  intro hA
+  by_contra h
+  rcases h with ⟨ S, hS1, hS2 ⟩
+  have hS3 := AddSubmonoid.exists_multiset_of_mem_closure hS1
+  rcases hS3 with ⟨ T, hT, hT1 ⟩
+  have hope : ∃ T' : Multiset A, T'.map (.^2) = T := sorry
+  
+  
+
 
 /- As an example, we show that ordered semirings are formally real. -/
 
