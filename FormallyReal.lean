@@ -35,7 +35,8 @@ example (A : Type _) [Semiring A] : IsFormallyReal A ↔
         refine' this M.toList _ a (Multiset.mem_toList.2 ha)
         rw [← hM]
         unfold sum_of_squares
-        sorry --Generalize `Multiset.sum_toList` to include a function
+        conv_rhs => rw [← Multiset.coe_toList M]
+        rw [Multiset.coe_map, Multiset.coe_sum] --Generalize `Multiset.sum_toList` to include a function
     intro L
     refine' List.ofFnRec (fun n f H a ha => _) L
     rw [List.map_ofFn, List.sum_ofFn] at H
