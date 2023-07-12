@@ -1,6 +1,7 @@
 /- # Formally real semirings -/
 
 import Mathlib.NumberTheory.Cyclotomic.Basic
+import Mathlib.Data.Multiset.Fintype
 -- import Mathlib.Tactic
 
 open BigOperators
@@ -18,6 +19,32 @@ class IsFormallyReal (A : Type _) [Semiring A] : Prop where
   is_formally_real : ∀ L : Multiset A, sum_of_squares L = 0 → (∀ x ∈ L, x = 0)
   -- ∀ (n : ℕ), ∀ (f : Fin n → A), (sum_of_squares f = 0) → (∀ i, f i = 0)
 
+example (A : Type _) [Semiring A] : IsFormallyReal A ↔
+    ∀ (n : ℕ), ∀ (f : Fin n → A), (∑ i, (f i) ^ 2 = 0) → (∀ i, f i = 0) := by
+  classical
+  refine' ⟨fun h n f hf i => _, fun h => ⟨_⟩⟩
+  · let M := (Multiset.map f Finset.univ.1)
+    have hM : (M.map (.^2)).sum = ∑ i, (f i) ^ 2 := by
+      simp only [Multiset.map_map, Function.comp_apply]
+      rfl  
+    rw [hf] at hM
+    refine' h.is_formally_real M hM (f i) _
+    simp
+  · suffices ∀ L : List A, (L.map (.^2)).sum = 0 → (∀ x ∈ L, x = 0) by
+      · intro M hM a ha
+        refine' this M.toList _ a (Multiset.mem_toList.2 ha)
+        rw [← hM]
+        unfold sum_of_squares
+        sorry --Generalize `Multiset.sum_toList` to include a function
+    intro L
+    refine' List.ofFnRec (fun n f H a ha => _) L
+    rw [List.map_ofFn, List.sum_ofFn] at H
+    obtain ⟨j, rfl⟩ := (List.mem_ofFn _ _).1 ha
+    exact h n f H j
+    
+      
+      
+      
 /- Next, we give basic properties of sums of squares in semirings. -/
 
 variable {A F : Type _}
