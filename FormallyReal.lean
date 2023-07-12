@@ -103,6 +103,7 @@ example {F : Type _} [Semifield F] [BEq F] : ¬(∃ L : List F, 1 + sum_of_squar
   rw [h0, hL]
   simp
  have L'' := List.erase L' (x/x)
+ have H3 : (x/x) ∈ L' := List.mem_map_of_mem _ (a := x) _
  have hL'' : 1 + sum_of_squares L'' = sum_of_squares L' := sorry
  rw [hL'] at hL''
  have H2 := h L''
