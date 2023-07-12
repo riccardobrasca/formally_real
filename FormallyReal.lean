@@ -57,7 +57,6 @@ def sum_sq_neq_minus_one {A : Type _} [Semiring A] [ntA : Nontrivial A] : IsForm
   have ccl := hA.is_formally_real _ hT1 1 (by simp)
   simp at ccl
   
-  
 /- As an example, we show that ordered semirings are formally real. -/
 
 -- **TASK 1:** Prove the above claim.
