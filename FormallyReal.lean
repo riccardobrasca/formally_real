@@ -41,6 +41,11 @@ section ppties_of_formally_real_semirings
 
 More generally, if `A` is a formally real nontrivial *semiring* (so `-1` does not make sense in `A`), then we prove that there does *not* exist a sum of squares `S` in `A` such that `1 + S = 0`. -/
 
+theorem _root_.Multiset.exists_map_of_mem_image {α β : Type _} [Nonempty α] {f : α → β}
+    {s : Multiset β} (hs : ∀ x ∈ s, ∃ y, f y = x) :
+    ∃ t : Multiset α, t.map f = s := by
+  sorry
+
 def sum_sq_neq_minus_one {A : Type _} [Semiring A] [ntA : Nontrivial A] : IsFormallyReal A → ¬(∃ S ∈ cone_of_squares A, 1 + S = 0) := by
   intro hA
   by_contra h
@@ -57,6 +62,26 @@ def sum_sq_neq_minus_one {A : Type _} [Semiring A] [ntA : Nontrivial A] : IsForm
   have ccl := hA.is_formally_real _ hT1 1 (by simp)
   simp at ccl
   
+def sum_sq_neq_minus_one' {A : Type _} [Semifield A] [ntA : Nontrivial A] :
+    ¬(∃ S ∈ cone_of_squares A, 1 + S = 0) → IsFormallyReal A := by
+  classical
+  intro hA
+  constructor
+  intro M hM
+  by_contra' h
+  obtain ⟨x, hxmem, hxzero⟩ := h
+  dsimp [sum_of_squares] at hM
+  rw [← Multiset.cons_erase hxmem, Multiset.map_cons, Multiset.sum_cons] at hM
+  apply hA
+  replace hM := congr_arg (fun a => a * (x⁻¹) ^ 2) hM
+  simp only at hM
+  rw [add_mul, inv_pow] at hM
+  simp only [ne_eq, zero_lt_two, pow_eq_zero_iff, hxzero, not_false_eq_true, mul_inv_cancel, zero_mul] at hM 
+  sorry
+
+
+  
+
 /- As an example, we show that ordered semirings are formally real. -/
 
 -- **TASK 1:** Prove the above claim.
