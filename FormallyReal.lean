@@ -41,17 +41,23 @@ section ppties_of_formally_real_semirings
 
 More generally, if `A` is a formally real nontrivial *semiring* (so `-1` does not make sense in `A`), then we prove that there does *not* exist a sum of squares `S` in `A` such that `1 + S = 0`. -/
 
-def sum_sq_neq_minus_one {A : Type _} [Semiring A] [ntA : Nontrivial A] : IsFormallyReal A → ¬(∃ S ∈ cone_of_squares A, S + 1 = 0) := by
+def sum_sq_neq_minus_one {A : Type _} [Semiring A] [ntA : Nontrivial A] : IsFormallyReal A → ¬(∃ S ∈ cone_of_squares A, 1 + S = 0) := by
   intro hA
   by_contra h
   rcases h with ⟨ S, hS1, hS2 ⟩
   have hS3 := AddSubmonoid.exists_multiset_of_mem_closure hS1
   rcases hS3 with ⟨ T, hT, hT1 ⟩
   have hope : ∃ T' : Multiset A, T'.map (.^2) = T := sorry
+  rcases hope with ⟨ T', rfl ⟩
+  replace hT1 := congr_arg (fun a => 1 + a) hT1
+  simp at hT1
+  rw [hS2, ← one_pow 2] at hT1
+  rw [← Multiset.sum_cons] at hT1
+  rw [← Multiset.map_cons (.^2)] at hT1
+  have ccl := hA.is_formally_real _ hT1 1 (by simp)
+  simp at ccl
   
   
-
-
 /- As an example, we show that ordered semirings are formally real. -/
 
 -- **TASK 1:** Prove the above claim.
