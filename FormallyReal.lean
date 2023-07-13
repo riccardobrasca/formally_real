@@ -170,12 +170,32 @@ def one_add_sum_of_squares_neq_zero {R : Type _} [Semiring R] [ntR : Nontrivial 
 
  /- In particular, **a field `F` is formally real if and only if `-1` is not a sum of squares in `F`**. -/
 
- def formally_real_semifield_equiv {F : Type _} [Semifield F] : (IsFormallyReal F) ↔ ¬ (∃ L : List F, 1 + sum_of_squares L = 0) := by
+ theorem formally_real_semifield_equiv {F : Type _} [Semifield F] :
+    (IsFormallyReal F) ↔ ¬ (∃ L : List F, 1 + sum_of_squares L = 0) := by
    classical
    constructor
    · exact one_add_sum_of_squares_neq_zero
    · exact sum_of_sq_eq_zero_iff_all_zero
    done
+
+ theorem formally_real_field_equiv {F : Type _} [Field F] :
+    (IsFormallyReal F) ↔ ¬ is_sum_of_squares (-1 : F) := by
+  unfold is_sum_of_squares
+  rw [formally_real_semifield_equiv]
+  constructor
+  · intro h h1
+    obtain ⟨L, hL⟩ := h1
+    have hh : 1 + sum_of_squares L = 0 := by rw [hL]; ring
+    apply h
+    use L
+    exact hh
+  · intro h h1
+    obtain ⟨L, hL⟩ := h1
+    apply h
+    use L
+    rw [add_eq_zero_iff_neg_eq] at hL
+    exact hL.symm
+
 
  /- ## Positive cones -/
 
@@ -229,8 +249,29 @@ theorem cone_of_squares.mem_mul {A : Type _} [CommSemiring A] {x y : A}
     rw [left_distrib]
     apply AddSubmonoid.add_mem _ h1 h2
 
+theorem cone_of_squares_eq_Subsemiring (A : Type _) [CommSemiring A] :
+    (Subsemiring.closure (squares A) : Set A) = (cone_of_squares A : Set A) := by
+  apply le_antisymm
+  · intro x hx
+    refine' Subsemiring.closure_induction hx _ _ _ _ _
+    · intro y hy
+      apply AddSubmonoid.subset_closure hy
+    · exact AddSubmonoid.zero_mem _
+    · apply AddSubmonoid.subset_closure
+      use 1
+      simp
+    · intro x y hx hy
+      exact AddSubmonoid.add_mem _ hx hy
+    · intro x y hx hy
+      exact cone_of_squares.mem_mul hx hy
+  · intro x hx
+    refine' AddSubmonoid.closure_induction hx _ _ _
+    · intro y hy
+      apply Subsemiring.subset_closure hy
+    · exact Subsemiring.zero_mem _
+    · intro x y hx hy
+      exact Subsemiring.add_mem _ hx hy
 
-#check AddSubmonoid.closure_induction₂
  /- ## Artin-Schreier theory -/
 
  /- We show that formally real fields admit an ordering, not unique in general.
@@ -240,10 +281,19 @@ theorem cone_of_squares.mem_mul {A : Type _} [CommSemiring A] {x y : A}
 def PositiveCones (A : Type _) [Ring A] :=
   { P : Subsemiring A | squares A ⊆ P ∧ -1 ∉ P }
 
-theorem PositiveCones.nonEmpty (A : Type _) [Ring A] [IsFormallyReal A] :
+theorem PositiveCones.nonEmpty (A : Type _) [Field A] [hA : IsFormallyReal A] :
     Nonempty (PositiveCones A) := by
-  simp
-  sorry
+  constructor
+  use Subsemiring.closure (squares A)
+  constructor
+  · apply Subsemiring.subset_closure
+  · change ¬(_ ∈ (_ : Set A))
+    rw [cone_of_squares_eq_Subsemiring]
+    intro h
+    simp at h
+    rw [← is_sum_of_squares_iff_mem_cone_of_squares] at h
+    apply formally_real_field_equiv.1 hA
+    exact h
 
 lemma span_cone_union_singleton {F : Type _} [Field F] (P : Subsemiring F)
     (hP : P ∈ PositiveCones F) (a : F) : (Subsemiring.closure (P ∪ {a}) : Set F) =
