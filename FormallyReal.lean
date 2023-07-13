@@ -67,8 +67,16 @@ def sum_of_squares_of_list_div {F : Type _} [Semifield F] (L : List F) (c : F) (
   rw [comp, sum_of_squares_of_list, div_eq_mul_inv, List.sum_map_mul_right]
   done
 
+
 def sum_of_squares_erase {R : Type _} [Semiring R] [BEq R] (L : List R) (a : R) (h : a ∈ L): sum_of_squares L = a ^ 2 + sum_of_squares (List.erase L a) := by
-  sorry -- use List.sum_map_erase
+  classical
+  induction' L with a L' ih
+  · cases h -- Tautological truth since h : a ∈ [] implies that [] = a + []
+  · rw [sum_of_squares_of_list, sum_of_squares_of_list]
+    --rw [← List.sum_map_erase List.map (fun x => x ^ 2) (a :: L')]
+    sorry
+   -- use
+
 
 -- **TASK 1:** Complete the proof above
 
@@ -196,10 +204,38 @@ lemma is_sum_of_squares_iff_mem_cone_of_squares {A : Type _} [Semiring A] (a : A
     · rw [← h₁, ← h₂]
       simp
 
-theorem cone_of_squares.mem_mul {A : Type _} [Semiring A] {x y : A}
+theorem cone_of_squares.mem_mul {A : Type _} [CommSemiring A] {x y : A}
     (hx : x ∈ cone_of_squares A) (hy : y ∈ cone_of_squares A) :
-    x * y ∈ cone_of_squares A := sorry
+    x * y ∈ cone_of_squares A := by
 
+  refine' AddSubmonoid.closure_induction₂ hx hy _ _ _ _ _
+  · intro x h1 y h2
+    obtain ⟨x1, hx1⟩ := h1
+    obtain ⟨x2, hx2⟩ := h2
+    rw [hx1, hx2, ← mul_pow]
+    apply AddSubmonoid.subset_closure
+    use x1 * x2
+  · intro x
+    rw [mul_eq_zero_of_left]
+    apply AddSubmonoid.subset_closure
+    use 0
+    rw [zero_pow (by norm_num)]
+    rfl
+  · intro x
+    rw [mul_eq_zero_of_right]
+    apply AddSubmonoid.subset_closure
+    use 0
+    rw [zero_pow (by norm_num)]
+    rfl
+  · intro x y z h1 h2
+    rw [right_distrib]
+    apply AddSubmonoid.add_mem _ h1 h2
+  · intro x y z h1 h2
+    rw [left_distrib]
+    apply AddSubmonoid.add_mem _ h1 h2
+
+
+#check AddSubmonoid.closure_induction₂
  /- ## Artin-Schreier theory -/
 
  /- We show that formally real fields admit an ordering, not unique in general.
@@ -210,5 +246,6 @@ def PositiveCones (A : Type _) [Ring A] :=
   { P : Subsemiring A | squares A ⊆ P ∧ -1 ∉ P }
 
 theorem PositiveCones.nonEmpty (A : Type _) [Ring A] [IsFormallyReal A] :
-    Nonempty (PositiveCones A) :=
+    Nonempty (PositiveCones A) := by
+  simp
   sorry
