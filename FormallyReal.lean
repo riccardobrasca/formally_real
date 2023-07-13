@@ -1,6 +1,7 @@
 /- # Formally real semirings -/
 
 import Mathlib.NumberTheory.Cyclotomic.Basic
+import Mathlib.Order.CompleteLattice
 import Mathlib.Tactic.Polyrith
 
 open BigOperators
@@ -68,8 +69,16 @@ def sum_of_squares_of_list_div {F : Type _} [Semifield F] (L : List F) (c : F) (
   rw [comp, sum_of_squares_of_list, div_eq_mul_inv, List.sum_map_mul_right]
   done
 
+
 def sum_of_squares_erase {R : Type _} [Semiring R] [BEq R] (L : List R) (a : R) (h : a ∈ L): sum_of_squares L = a ^ 2 + sum_of_squares (List.erase L a) := by
-  sorry -- use List.sum_map_erase
+  classical
+  induction' L with a L' ih
+  · cases h -- Tautological truth since h : a ∈ [] implies that [] = a + []
+  · rw [sum_of_squares_of_list, sum_of_squares_of_list]
+    --rw [← List.sum_map_erase List.map (fun x => x ^ 2) (a :: L')]
+    sorry
+   -- use
+
 
 -- **TASK 1:** Complete the proof above
 
@@ -197,10 +206,38 @@ lemma is_sum_of_squares_iff_mem_cone_of_squares {A : Type _} [Semiring A] (a : A
     · rw [← h₁, ← h₂]
       simp
 
-theorem cone_of_squares.mem_mul {A : Type _} [Semiring A] {x y : A}
+theorem cone_of_squares.mem_mul {A : Type _} [CommSemiring A] {x y : A}
     (hx : x ∈ cone_of_squares A) (hy : y ∈ cone_of_squares A) :
-    x * y ∈ cone_of_squares A := sorry
+    x * y ∈ cone_of_squares A := by
 
+  refine' AddSubmonoid.closure_induction₂ hx hy _ _ _ _ _
+  · intro x h1 y h2
+    obtain ⟨x1, hx1⟩ := h1
+    obtain ⟨x2, hx2⟩ := h2
+    rw [hx1, hx2, ← mul_pow]
+    apply AddSubmonoid.subset_closure
+    use x1 * x2
+  · intro x
+    rw [mul_eq_zero_of_left]
+    apply AddSubmonoid.subset_closure
+    use 0
+    rw [zero_pow (by norm_num)]
+    rfl
+  · intro x
+    rw [mul_eq_zero_of_right]
+    apply AddSubmonoid.subset_closure
+    use 0
+    rw [zero_pow (by norm_num)]
+    rfl
+  · intro x y z h1 h2
+    rw [right_distrib]
+    apply AddSubmonoid.add_mem _ h1 h2
+  · intro x y z h1 h2
+    rw [left_distrib]
+    apply AddSubmonoid.add_mem _ h1 h2
+
+
+#check AddSubmonoid.closure_induction₂
  /- ## Artin-Schreier theory -/
 
  /- We show that formally real fields admit an ordering, not unique in general.
@@ -211,7 +248,8 @@ def PositiveCones (A : Type _) [Ring A] :=
   { P : Subsemiring A | squares A ⊆ P ∧ -1 ∉ P }
 
 theorem PositiveCones.nonEmpty (A : Type _) [Ring A] [IsFormallyReal A] :
-    Nonempty (PositiveCones A) :=
+    Nonempty (PositiveCones A) := by
+  simp
   sorry
 
 lemma span_cone_union_singleton {F : Type _} [Field F] (P : Subsemiring F)
@@ -365,3 +403,43 @@ theorem cone_add_element {F : Type _} [Field F] (P : Subsemiring F) (hP : P ∈ 
         exact aux
       exact h2 ha2
   done
+
+theorem exists_maximal_pos_cone {A: Type _} [Ring A] [IsFormallyReal A]
+    (hne: Nonempty (PositiveCones A)) :
+    ∃ P ∈ PositiveCones A, ∀ S ∈ PositiveCones A, P ≤ S → S = P := by
+  -- proving zorn lemma's condition holds
+  have zorn_hypothesis : ∀ C, C ⊆ PositiveCones A → IsChain (. ≤ .) C →
+      ∀ x ∈ C, ∃ ub ∈ PositiveCones A, ∀ z ∈ C, z ≤ ub := by
+    intro C C_in_pos_cone C_is_chain Q Q_in_C
+    use sSup C
+    constructor
+    . unfold PositiveCones
+      simp
+      constructor
+      . intro a a_in_sq
+        simp
+        apply (Subsemiring.mem_sSup_of_directedOn ⟨Q, Q_in_C⟩ C_is_chain.directedOn).2
+        have Q_in_pos_cone : Q ∈ PositiveCones A := by exact C_in_pos_cone Q_in_C
+        unfold PositiveCones at Q_in_pos_cone
+        simp at Q_in_pos_cone
+        have a_in_Q : a ∈ Q := by apply Q_in_pos_cone.1 a_in_sq
+        exact ⟨Q, Q_in_C, a_in_Q⟩
+      . rcases Subsemiring.mem_sSup_of_directedOn ⟨Q, Q_in_C⟩ C_is_chain.directedOn with h
+        rw [h]
+        push_neg
+        intro S S_in_C
+        have S_in_pos_cone : S ∈ PositiveCones A := by exact C_in_pos_cone S_in_C
+        unfold PositiveCones at S_in_pos_cone
+        simp at S_in_pos_cone
+        exact S_in_pos_cone.2
+    . intro L L_in_C
+      exact le_sSup L_in_C
+
+  -- using zorn lemma
+  rcases hne with ⟨B, B_in_pos_cone⟩
+  rcases zorn_nonempty_partialOrder₀ (PositiveCones A) zorn_hypothesis B B_in_pos_cone
+    with ⟨M, M_in_pos_cone, ⟨_, M_is_maximal⟩⟩
+  use M
+  constructor
+  . exact M_in_pos_cone
+  . apply M_is_maximal
