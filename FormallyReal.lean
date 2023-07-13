@@ -212,3 +212,51 @@ def PositiveCones (A : Type _) [Ring A] :=
 theorem PositiveCones.nonEmpty (A : Type _) [Ring A] [IsFormallyReal A] :
     Nonempty (PositiveCones A) :=
   sorry
+
+theorem cone_add_element {F : Type _} [Field F] (P : Subsemiring F) (hP : P ∈ PositiveCones F)
+    (a : F) (h1 : a ∉ P) (h2 : -a ∉ P) : Subsemiring.closure (P ∪ {a}) ∈ PositiveCones F := by
+  unfold PositiveCones
+  constructor
+  · suffices h1 : P ≤  Subsemiring.closure (P ∪ {a}) by
+      · refine' le_trans _ h1
+        exact hP.1
+    suffices (P : Set F) ⊆ P ∪ {a} by
+      · refine' subset_trans this _
+        exact Subsemiring.subset_closure
+    exact Set.subset_union_left ↑P {a}
+  · by_contra h3
+    have h4 : ∃ (x y : F), (x ∈ P) ∧ (y ∈ P) ∧ (-1 = x + a * y) := sorry
+    rcases h4 with ⟨x, y, hx, hy, hxy⟩
+    by_cases y = 0
+    rw [h] at hxy
+    simp at hxy
+    rw [← hxy] at hx
+    exact hP.2 hx
+    have ha : -a = (y⁻¹)^2 * y * (1 + x) := by
+      field_simp [h]
+      rw [neg_eq_iff_eq_neg.1 hxy]
+      ring
+    have ha2 : -a ∈ P := by
+      have hy2 : (y⁻¹)^2 ∈ P := by
+        apply hP.1
+        use y⁻¹
+      have hx2 : 1 ∈ P := by
+        rw [← one_pow 2]
+        apply hP.1
+        use 1
+      have hx3 : 1 + x ∈ P := by
+        apply Subsemiring.add_mem
+        exact hx2
+        exact hx
+      have aux : (y⁻¹)^2 * y * (1 + x) ∈ P := by
+        apply Subsemiring.mul_mem
+        have aux2 : (y⁻¹)^2 * y ∈ P := by
+          apply Subsemiring.mul_mem
+          exact hy2
+          exact hy
+        exact aux2
+        exact hx3
+      rw [← ha] at aux
+      exact aux
+    exact h2 ha2
+  done
