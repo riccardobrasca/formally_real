@@ -69,10 +69,13 @@ def sum_of_squares_of_list_div {F : Type _} [Semifield F] (L : List F) (c : F) (
   rw [comp, sum_of_squares_of_list, div_eq_mul_inv, List.sum_map_mul_right]
   done
 
-def sum_of_squares_erase {R : Type _} [Semiring R] [BEq R] (L : List R) (a : R) (h : a ∈ L) :
-    sum_of_squares L = a ^ 2 + sum_of_squares (List.erase L a) := by
-  rw [sum_of_squares_of_list]
-  sorry
+
+def sum_of_squares_erase {R : Type _} [Semiring R] [DecidableEq R] (L : List R) (a : R) (h : a ∈ L): sum_of_squares L = a ^ 2 + sum_of_squares (List.erase L a) := by
+  rw [sum_of_squares_of_list, sum_of_squares_of_list, ← Multiset.coe_sum,
+    ← Multiset.coe_sum, ← Multiset.coe_map, ← Multiset.coe_map,  ← Multiset.sum_cons,
+    ← Multiset.map_cons (.^2), ← Multiset.cons_erase (show a ∈ (L : Multiset R) from h)]
+  simp
+
 
 -- **TASK 1:** Complete the proof above
 
