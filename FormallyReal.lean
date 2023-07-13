@@ -38,12 +38,12 @@ example : sum_of_squares [1, 2, 3] = 14 := rfl
 
 /- We now give a proof of these results, as well as of other useful facts about sums of squares. -/
 
-@[simp] 
+@[simp]
 def sum_of_squares_head_tail {R : Type _} [Semiring R] (x : R) (L : List R) : sum_of_squares (x :: L) = (sum_of_squares [x]) + (sum_of_squares L) := by
   simp [sum_of_squares]
   done
 
-@[simp] 
+@[simp]
 def sum_of_squares_concat {R : Type _} [Semiring R] (L1 L2 : List R) : sum_of_squares (L1 ++ L2) = sum_of_squares L1 + sum_of_squares L2 := by
   induction' L1 with x L ih
   · simp [sum_of_squares]
@@ -61,7 +61,7 @@ def sum_of_squares_of_list {R : Type _} [Semiring R] (L : List R) : sum_of_squar
 def sum_of_squares_of_list_div {F : Type _} [Semifield F] (L : List F) (c : F) (h : c ≠ 0) : sum_of_squares (L.map (./c)) = sum_of_squares L / (c^2) := by
   rw [sum_of_squares_of_list]
   simp [sum_of_squares]
-  have comp : ((fun x => x ^ 2) ∘ (fun x => x / c)) = (fun x => x ^ 2 * (c ^ 2)⁻¹ ) := by 
+  have comp : ((fun x => x ^ 2) ∘ (fun x => x / c)) = (fun x => x ^ 2 * (c ^ 2)⁻¹ ) := by
     ext x
     field_simp
   rw [comp, sum_of_squares_of_list, div_eq_mul_inv, List.sum_map_mul_right]
@@ -98,7 +98,7 @@ lemma IsFormallyReal_iff_Multiset (R : Type _) [Semiring R] : IsFormallyReal R �
   · refine' h L _ _ (by simp [hx])
     convert hL
     simp [sum_of_squares_of_list]
-    
+
 /- As an example, we show that ordered semirings are formally real. -/
 
 @[simp]
@@ -123,7 +123,7 @@ instance {A : Type _} [LinearOrderedRing A] : IsFormallyReal A where
 
 -- **TASK 2:** Prove the claim above
 
-/- ## Properties of formally real semirings 
+/- ## Properties of formally real semirings
 
 We first want to show that, if `R` is a *non-trivial* formally real *ring*, then `-1` is not a sum of squares in `R`. We deduce this from the more general fact that, if `R` is a formally real nontrivial *semiring*, then there does *not* exist a sum of squares `S` in `R` such that `1 + S = 0`.-/
 
@@ -138,8 +138,8 @@ def one_add_sum_of_squares_neq_zero {R : Type _} [Semiring R] [ntR : Nontrivial 
 
  -- **TASK 3:** Prove the claim above
 
- /- ## Formally real semifields 
- 
+ /- ## Formally real semifields
+
  We prove that, in a semifield, the converse to `one_add_sum_of_squares_neq_zero` holds, namely: if there is no sum of squares `S` such that `1 + S = 0`, then the semifield `F` is formally real. -/
 
  def sum_of_sq_eq_zero_iff_all_zero {F : Type _} [Semifield F] : ¬(∃ L : List F, 1 + sum_of_squares L = 0) → IsFormallyReal F := by
@@ -174,12 +174,29 @@ def one_add_sum_of_squares_neq_zero {R : Type _} [Semiring R] [ntR : Nontrivial 
    constructor
    · exact one_add_sum_of_squares_neq_zero
    · exact sum_of_sq_eq_zero_iff_all_zero
-   done 
+   done
 
  /- ## Positive cones -/
 
  -- We define positive cones and show how maximal positive cones induce orderings.
 
+def squares (A : Type _) [Semiring A] : Set A := {a | ∃ (b : A), a = b ^ 2}
+
+def cone_of_squares (A : Type _) [Semiring A] := AddSubmonoid.closure (squares A)
+
+lemma is_sum_of_squares_iff_mem_cone_of_squares {A : Type _} [Semiring A] (a : A) :
+    is_sum_of_squares a ↔ a ∈ cone_of_squares A := by
+  refine' ⟨fun ⟨L, hL⟩ => _, fun h => _⟩
+  · rw [← hL, sum_of_squares_of_list]
+    refine' AddSubmonoid.list_sum_mem _ (fun a ha => AddSubmonoid.subset_closure _)
+    obtain ⟨b, _, rfl⟩ := List.mem_map.1 ha
+    exact ⟨b, rfl⟩
+  · refine' AddSubmonoid.closure_induction h (fun a ⟨b, hb⟩ => ⟨[b], _⟩) (⟨[], by simp [sum_of_squares]⟩)
+      (fun a b ⟨L₁, h₁⟩ ⟨L₂, h₂⟩ => ⟨L₁ ++ L₂, _⟩)
+    · rw [hb]
+      simp [sum_of_squares]
+    · rw [← h₁, ← h₂]
+      simp
 
  /- ## Artin-Schreier theory -/
 
