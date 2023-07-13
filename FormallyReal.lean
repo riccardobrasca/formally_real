@@ -97,7 +97,7 @@ lemma sum_sq_nonneg {A : Type _} [LinearOrderedRing A] : (L : Multiset A) → 0 
     . exact ih
 
 -- **TASK 1:** Prove the above claim.
-example {A : Type _} [LinearOrderedRing A] : IsFormallyReal A where
+instance {A : Type _} [LinearOrderedRing A] : IsFormallyReal A where
   is_formally_real := fun (L : Multiset A) (sum_sq_zero: sum_of_squares L = 0) ↦ by
     intro a a_in_L
     by_contra c
