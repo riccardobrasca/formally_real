@@ -14,6 +14,8 @@ def sum_of_squares {R : Type _} [Semiring R] : List R → R
   | [] => 0
   | (a :: L) => (a ^ 2) + (sum_of_squares L)
 
+example : sum_of_squares [1, -2, 3] = 14 := rfl
+
 def is_sum_of_squares {R : Type _} [Semiring R] (x : R) : Prop := ∃ L : List R, sum_of_squares L = x
 
 /- A few sanity checks -/
@@ -75,9 +77,6 @@ def sum_of_squares_erase {R : Type _} [Semiring R] [DecidableEq R] (L : List R) 
     ← Multiset.coe_sum, ← Multiset.coe_map, ← Multiset.coe_map,  ← Multiset.sum_cons,
     ← Multiset.map_cons (.^2), ← Multiset.cons_erase (show a ∈ (L : Multiset R) from h)]
   simp
-
-
--- **TASK 1:** Complete the proof above
 
 /- ## Definition of formally real semirings -/
 
