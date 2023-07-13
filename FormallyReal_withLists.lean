@@ -10,6 +10,12 @@ def sum_of_squares {R : Type _} [Semiring R] : List R → R
   | [] => 0
   | (a :: L) => (a ^ 2) + (sum_of_squares L)
 
+lemma sum_of_squares_eq_map_sum {R : Type _} [Semiring R] (L : List R) :
+    sum_of_squares L = (L.map (.^2)).sum := by
+  induction' L with r L hL
+  · simp [sum_of_squares]
+  · simp [hL, sum_of_squares] 
+
 def is_sum_of_squares {R : Type _} [Semiring R] (x : R) : Prop := ∃ L : List R, sum_of_squares L = x
 
 /- A few sanity checks -/
