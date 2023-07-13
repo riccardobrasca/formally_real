@@ -74,7 +74,7 @@ def sum_of_squares_of_list_div {F : Type _} [Semifield F] (L : List F) (c : F) (
   done
 
 def sum_of_squares_erase {R : Type _} [Semiring R] [BEq R] (L : List R) (a : R) (h : a ∈ L): sum_of_squares L = a ^ 2 + sum_of_squares (List.erase L a) := by
-  sorry
+  sorry -- use List.sum_map_erase
 
 -- **TASK 1:** Complete the proof above
 
@@ -136,9 +136,15 @@ def one_add_sum_of_squares_neq_zero {R : Type _} [Semiring R] [ntR : Nontrivial 
   by_contra hL1
   push_neg at hL1
   rcases hL1 with ⟨x, hx1, hx2⟩
-  let L' := L.map (./x)
-  have h0 : sum_of_squares L' = sum_of_squares L / (x^2) := by
+  -- We are going to construct a list L such that 1 + sum_of_squares L = 0, thus contradicting h
+  let L' := List.erase L x
+  have hL' : sum_of_squares L = x ^ 2 + sum_of_squares L' := by
+    apply sum_of_squares_erase
+    exact hx1
+  let L'' := L.map (./x)
+  have hL'' : sum_of_squares L'' = sum_of_squares L / (x^2) := by
     rw [← sum_of_squares_of_list_div L x hx2]
+  
   have hL' : sum_of_squares L' = 0 := by
     rw [h0, hL]
     simp
