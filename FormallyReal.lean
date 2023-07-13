@@ -129,6 +129,7 @@ def one_add_sum_of_squares_neq_zero {R : Type _} [Semiring R] [ntR : Nontrivial 
  We prove that, in a semifield, the converse to `one_add_sum_of_squares_neq_zero` holds, namely: if there is no sum of squares `S` such that `1 + S = 0`, then the semifield `F` is formally real. -/
 
  def sum_of_sq_eq_zero_iff_all_zero {F : Type _} [Semifield F] : ¬(∃ L : List F, 1 + sum_of_squares L = 0) → IsFormallyReal F := by
+  classical
   intro h
   push_neg at h
   constructor
@@ -140,27 +141,26 @@ def one_add_sum_of_squares_neq_zero {R : Type _} [Semiring R] [ntR : Nontrivial 
   let L' := L.map (./x)
   have hL' : sum_of_squares L' = sum_of_squares L / (x^2) := by
     rw [← sum_of_squares_of_list_div L x hx2]
-  have hL' : sum_of_squares L' = 0 := by
-    rw [hL]
+  have hL'1 : sum_of_squares L' = 0 := by
+    rw [hL', hL]
     simp
-
-  let L' := List.erase L x
-  have hL' : sum_of_squares L = x ^ 2 + sum_of_squares L' := by
+  have hx3 : (x / x) ∈ L' := by sorry
+  let L'' := List.erase L' (x / x)
+  have hL'2 : sum_of_squares L' = (x / x)^2 + sum_of_squares L'' := by
     apply sum_of_squares_erase
-    exact hx1
-  
-  have L'' := List.erase L' (x/x)
-  have h2 : (x/x) ∈ L' := List.mem_map_of_mem (f := fun y => y/x) (a := x) hx1
-  have hL'' : sum_of_squares L' = 1 + sum_of_squares L'' := by
-    rw [sum_of_squares_erase]
-    
+    exact hx3
+  rw [hL'] at hL'1
+  have hL'3 : sum_of_squares L' = 0 := by
+    rw [hL',hL]
+    simp
+  rw [hL'3] at hL'2
+  have H : 1 + sum_of_squares L'' = 0 := by
     sorry
-  rw [hL'] at hL''
-  have h3 := h L''
-  apply h3
-  exact hL''
-  
--- **TASK 3:** Complete the proof above (one `sorry` to fill)
+  have H1 := h L''
+  exact H1 H
+  done
+
+-- **TASK 4:** Complete the proof above (two `sorry` to fill)
 
  /- In particular, **a field `F` is formally real if and only if `-1` is not a sum of squares in `F`**. -/
 
