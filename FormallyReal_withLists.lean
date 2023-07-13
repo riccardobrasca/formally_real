@@ -79,6 +79,19 @@ lemma IsFormallyReal_iff_Fin (R : Type _) [Semiring R] : IsFormallyReal R ↔
     obtain ⟨j, rfl⟩ := (List.mem_ofFn _ _).1 ha
     exact h n f H j
 
+lemma IsFormallyReal_iff_Multiset (R : Type _) [Semiring R] : IsFormallyReal R ↔
+    ∀ (M : Multiset R), (M.map (.^2)).sum = 0 → (∀ x ∈ M, x = 0) := by
+  refine' ⟨fun h M hM x hx => _, fun h => ⟨fun L hL x hx => _⟩⟩
+  · refine' h.is_formally_real M.toList _ x (Multiset.mem_toList.2 hx)
+    convert hM
+    rw [sum_of_squares_eq_map_sum]
+    conv_rhs => rw [← Multiset.coe_toList M]
+    rw [Multiset.coe_map, Multiset.coe_sum]
+  · refine' h L _ _ (by simp [hx])
+    convert hL
+    simp [sum_of_squares_eq_map_sum]
+    
+
 /- As an example, we show that ordered semirings are formally real. -/
 
 -- **TASK 2:** Prove the claim above
