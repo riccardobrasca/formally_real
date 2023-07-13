@@ -2,6 +2,8 @@
 
 import Mathlib.NumberTheory.Cyclotomic.Basic
 
+open BigOperators
+
 /- ## Sums of squares
 
 To define formally real semirings, we first define what it means to be a sum of squares in a semiring. -/
@@ -67,6 +69,15 @@ def sum_of_squares_of_list_div {F : Type _} [Semifield F] (L : List F) (c : F) (
 @[mk_iff]
 class IsFormallyReal (R : Type _) [Semiring R] : Prop where
   is_formally_real : ∀ L : List R, sum_of_squares L = 0 → (∀ x ∈ L, x = 0)
+
+lemma IsFormallyReal_iff_Fin (R : Type _) [Semiring R] : IsFormallyReal R ↔
+    ∀ (n : ℕ), ∀ (f : Fin n → R), (∑ i, (f i) ^ 2 = 0) → (∀ i, f i = 0) := by
+  refine' ⟨fun h n f hf i => _, fun h => ⟨fun L => List.ofFnRec (fun n f H a ha => _) L⟩⟩
+  · refine' h.is_formally_real (List.ofFn f) _ (f i) (by simp [List.mem_ofFn])
+    simp [sum_of_squares, sum_of_squares_eq_map_sum, List.sum_ofFn, hf]
+  · rw [sum_of_squares_eq_map_sum, List.map_ofFn, List.sum_ofFn] at H
+    obtain ⟨j, rfl⟩ := (List.mem_ofFn _ _).1 ha
+    exact h n f H j
 
 /- As an example, we show that ordered semirings are formally real. -/
 
