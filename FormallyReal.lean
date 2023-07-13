@@ -1,6 +1,8 @@
 /- # Formally real semirings -/
 
 import Mathlib.NumberTheory.Cyclotomic.Basic
+import Mathlib.Order.CompleteLattice
+import Mathlib.Tactic.Polyrith
 
 open BigOperators
 
@@ -300,50 +302,194 @@ theorem PositiveCones.nonEmpty (A : Type _) [Field A] [hA : IsFormallyReal A] :
     apply formally_real_field_equiv.1 hA
     exact h
 
-theorem cone_add_element {F : Type _} [Field F] (P : Subsemiring F) (hP : P ∈ PositiveCones F)
-    (a : F) (h1 : a ∉ P) (h2 : -a ∉ P) : Subsemiring.closure (P ∪ {a}) ∈ PositiveCones F := by
-  unfold PositiveCones
-  constructor
-  · suffices h1 : P ≤  Subsemiring.closure (P ∪ {a}) by
-      · refine' le_trans _ h1
-        exact hP.1
-    suffices (P : Set F) ⊆ P ∪ {a} by
-      · refine' subset_trans this _
-        exact Subsemiring.subset_closure
-    exact Set.subset_union_left ↑P {a}
-  · by_contra h3
-    have h4 : ∃ (x y : F), (x ∈ P) ∧ (y ∈ P) ∧ (-1 = x + a * y) := sorry
-    rcases h4 with ⟨x, y, hx, hy, hxy⟩
-    by_cases y = 0
-    rw [h] at hxy
-    simp at hxy
-    rw [← hxy] at hx
-    exact hP.2 hx
-    have ha : -a = (y⁻¹)^2 * y * (1 + x) := by
-      field_simp [h]
-      rw [neg_eq_iff_eq_neg.1 hxy]
-      ring
-    have ha2 : -a ∈ P := by
-      have hy2 : (y⁻¹)^2 ∈ P := by
-        apply hP.1
-        use y⁻¹
-      have hx2 : 1 ∈ P := by
-        rw [← one_pow 2]
-        apply hP.1
+lemma span_cone_union_singleton {F : Type _} [Field F] (P : Subsemiring F)
+    (hP : P ∈ PositiveCones F) (a : F) : (Subsemiring.closure (P ∪ {a}) : Set F) =
+    { z : F | ∃ (x y : F), (x ∈ P) ∧ (y ∈ P) ∧ (z = x + a * y) } := by
+  apply le_antisymm
+  · intro z hz
+    refine' Subsemiring.closure_induction hz _ _ _ _ _
+    · intro z hz
+      cases' hz with hz1 hz2
+      · refine' ⟨z, 0, ⟨hz1, Subsemiring.zero_mem _, by simp⟩⟩
+      · use 0
         use 1
-      have hx3 : 1 + x ∈ P := by
-        apply Subsemiring.add_mem
+        constructor
+        exact Subsemiring.zero_mem _
+        constructor
+        exact Subsemiring.one_mem _
+        simp at hz2
+        rw [hz2]
+        simp
+    · use 0
+      use 0
+      constructor
+      exact Subsemiring.zero_mem _
+      constructor
+      exact Subsemiring.zero_mem _
+      simp
+    · use 1
+      use 0
+      constructor
+      exact Subsemiring.one_mem _
+      constructor
+      exact Subsemiring.zero_mem _
+      simp
+    · intro x y hx hy
+      rcases hx with ⟨x1, y1, hx1, hy1, hx1y1⟩
+      rcases hy with ⟨x2, y2, hx2, hy2, hx2y2⟩
+      use x1 + x2
+      use y1 + y2
+      constructor
+      · exact Subsemiring.add_mem _ hx1 hx2
+      · constructor
+        · exact Subsemiring.add_mem _ hy1 hy2
+        · rw [hx2y2]
+          rw [hx1y1]
+          ring
+    intro x y hx hy
+    rcases hx with ⟨x1, y1, hx1, hy1, hx1y1⟩
+    rcases hy with ⟨x2, y2, hx2, hy2, hx2y2⟩
+    use x1 * x2 + a^2 * y1 * y2
+    use x1 * y2 + x2 * y1
+    constructor
+    · apply Subsemiring.add_mem _
+      apply Subsemiring.mul_mem _
+      exact hx1
+      exact hx2
+      apply Subsemiring.mul_mem _
+      apply Subsemiring.mul_mem _
+      apply hP.1
+      use a
+      exact hy1
+      exact hy2
+    · constructor
+      · apply Subsemiring.add_mem _
+        apply Subsemiring.mul_mem _
+        exact hx1
+        exact hy2
+        apply Subsemiring.mul_mem _
         exact hx2
-        exact hx
-      have aux : (y⁻¹)^2 * y * (1 + x) ∈ P := by
-        apply Subsemiring.mul_mem
-        have aux2 : (y⁻¹)^2 * y ∈ P := by
-          apply Subsemiring.mul_mem
-          exact hy2
-          exact hy
-        exact aux2
-        exact hx3
-      rw [← ha] at aux
-      exact aux
-    exact h2 ha2
+        exact hy1
+      · rw [hx1y1, hx2y2]
+        ring
+  · rintro z ⟨x, y, hx, hy, hz⟩
+    rw [hz]
+    apply Subsemiring.add_mem
+    apply Subsemiring.subset_closure
+    apply Set.mem_union_left
+    exact hx
+    apply Subsemiring.mul_mem
+    apply Subsemiring.subset_closure
+    apply Set.mem_union_right
+    simp
+    apply Subsemiring.subset_closure
+    apply Set.mem_union_left
+    exact hy
   done
+
+theorem cone_add_element {F : Type _} [Field F] (P : Subsemiring F) (hP : P ∈ PositiveCones F)
+    (a : F) (h1 : a ∉ P) (h2 : -a ∉ P) : (P < Subsemiring.closure (P ∪ {a})) ∧ (Subsemiring.closure (P ∪ {a}) ∈ PositiveCones F) := by
+  constructor
+  · by_contra' h
+    have h' : P ≤ Subsemiring.closure (P ∪ {a}) := by
+      suffices (P : Set F) ≤ (P ∪ {a} : Set F) by
+        · apply le_trans this Subsemiring.subset_closure
+      simp
+    replace h' := le_iff_lt_or_eq.1 h'
+    have h''' : ¬(P< Subsemiring.closure (P ∪ {a}))  → P = Subsemiring.closure (P ∪ {a}) := by
+      apply or_iff_not_imp_right.1 h'.symm
+    have H4 : P = Subsemiring.closure (P ∪ {a}) := by
+      exact h''' h
+    apply h1
+    rw [H4]
+    apply Subsemiring.subset_closure
+    exact Set.mem_union_right _ rfl
+  · unfold PositiveCones
+    constructor
+    · suffices h1 : P ≤  Subsemiring.closure (P ∪ {a}) by
+        · refine' le_trans _ h1
+          exact hP.1
+      suffices (P : Set F) ⊆ P ∪ {a} by
+        · refine' subset_trans this _
+          exact Subsemiring.subset_closure
+      exact Set.subset_union_left ↑P {a}
+    · by_contra h3
+      have h4 : ∃ (x y : F), (x ∈ P) ∧ (y ∈ P) ∧ (-1 = x + a * y) := by
+        change _ ∈ (_ : Set F) at h3
+        rw [span_cone_union_singleton P hP] at h3
+        exact h3
+      rcases h4 with ⟨x, y, hx, hy, hxy⟩
+      by_cases y = 0
+      rw [h] at hxy
+      simp at hxy
+      rw [← hxy] at hx
+      exact hP.2 hx
+      have ha : -a = (y⁻¹)^2 * y * (1 + x) := by
+        field_simp [h]
+        -- polyrith
+        rw [neg_eq_iff_eq_neg.1 hxy]
+        ring
+      have ha2 : -a ∈ P := by
+        have hy2 : (y⁻¹)^2 ∈ P := by
+          apply hP.1
+          use y⁻¹
+        have hx2 : 1 ∈ P := by
+          rw [← one_pow 2]
+          apply hP.1
+          use 1
+        have hx3 : 1 + x ∈ P := by
+          apply Subsemiring.add_mem
+          exact hx2
+          exact hx
+        have aux : (y⁻¹)^2 * y * (1 + x) ∈ P := by
+          apply Subsemiring.mul_mem
+          have aux2 : (y⁻¹)^2 * y ∈ P := by
+            apply Subsemiring.mul_mem
+            exact hy2
+            exact hy
+          exact aux2
+          exact hx3
+        rw [← ha] at aux
+        exact aux
+      exact h2 ha2
+  done
+
+theorem exists_maximal_pos_cone {A: Type _} [Ring A] [IsFormallyReal A]
+    (hne: Nonempty (PositiveCones A)) :
+    ∃ P ∈ PositiveCones A, ∀ S ∈ PositiveCones A, P ≤ S → S = P := by
+  -- proving zorn lemma's condition holds
+  have zorn_hypothesis : ∀ C, C ⊆ PositiveCones A → IsChain (. ≤ .) C →
+      ∀ x ∈ C, ∃ ub ∈ PositiveCones A, ∀ z ∈ C, z ≤ ub := by
+    intro C C_in_pos_cone C_is_chain Q Q_in_C
+    use sSup C
+    constructor
+    . unfold PositiveCones
+      simp
+      constructor
+      . intro a a_in_sq
+        simp
+        apply (Subsemiring.mem_sSup_of_directedOn ⟨Q, Q_in_C⟩ C_is_chain.directedOn).2
+        have Q_in_pos_cone : Q ∈ PositiveCones A := by exact C_in_pos_cone Q_in_C
+        unfold PositiveCones at Q_in_pos_cone
+        simp at Q_in_pos_cone
+        have a_in_Q : a ∈ Q := by apply Q_in_pos_cone.1 a_in_sq
+        exact ⟨Q, Q_in_C, a_in_Q⟩
+      . rcases Subsemiring.mem_sSup_of_directedOn ⟨Q, Q_in_C⟩ C_is_chain.directedOn with h
+        rw [h]
+        push_neg
+        intro S S_in_C
+        have S_in_pos_cone : S ∈ PositiveCones A := by exact C_in_pos_cone S_in_C
+        unfold PositiveCones at S_in_pos_cone
+        simp at S_in_pos_cone
+        exact S_in_pos_cone.2
+    . intro L L_in_C
+      exact le_sSup L_in_C
+
+  -- using zorn lemma
+  rcases hne with ⟨B, B_in_pos_cone⟩
+  rcases zorn_nonempty_partialOrder₀ (PositiveCones A) zorn_hypothesis B B_in_pos_cone
+    with ⟨M, M_in_pos_cone, ⟨_, M_is_maximal⟩⟩
+  use M
+  constructor
+  . exact M_in_pos_cone
+  . apply M_is_maximal
