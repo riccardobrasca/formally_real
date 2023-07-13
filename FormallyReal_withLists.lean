@@ -76,6 +76,8 @@ def sum_of_squares_of_list_div {F : Type _} [Semifield F] (L : List F) (c : F) (
 def sum_of_squares_erase {R : Type _} [Semiring R] [BEq R] (L : List R) (a : R) (h : a âˆˆ L): sum_of_squares L = a ^ 2 + sum_of_squares (List.erase L a) := by
   sorry
 
+-- **TASK 1:** Complete the proof above
+
 /- ## Definition of formally real semirings -/
 
 @[mk_iff]
@@ -103,10 +105,9 @@ lemma IsFormallyReal_iff_Multiset (R : Type _) [Semiring R] : IsFormallyReal R â
     convert hL
     simp [sum_of_squares_eq_map_sum]
     
-
 /- As an example, we show that ordered semirings are formally real. -/
 
--- **TASK 1:** Prove the claim above
+-- **TASK 2:** Prove the claim above
 
 /- ## Properties of formally real semirings 
 
