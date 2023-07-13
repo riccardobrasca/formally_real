@@ -1,6 +1,7 @@
 /- # Formally real semirings -/
 
 import Mathlib.NumberTheory.Cyclotomic.Basic
+import Mathlib.Order.CompleteLattice
 
 open BigOperators
 
@@ -297,3 +298,43 @@ theorem cone_add_element {F : Type _} [Field F] (P : Subsemiring F) (hP : P ∈ 
       exact aux
     exact h2 ha2
   done
+
+theorem exists_maximal_pos_cone {A: Type _} [Ring A] [IsFormallyReal A]
+    (hne: Nonempty (PositiveCones A)) :
+    ∃ P ∈ PositiveCones A, ∀ S ∈ PositiveCones A, P ≤ S → S = P := by
+  -- proving zorn lemma's condition holds
+  have zorn_hypothesis : ∀ C, C ⊆ PositiveCones A → IsChain (. ≤ .) C →
+      ∀ x ∈ C, ∃ ub ∈ PositiveCones A, ∀ z ∈ C, z ≤ ub := by
+    intro C C_in_pos_cone C_is_chain Q Q_in_C
+    use sSup C
+    constructor
+    . unfold PositiveCones
+      simp
+      constructor
+      . intro a a_in_sq
+        simp
+        apply (Subsemiring.mem_sSup_of_directedOn ⟨Q, Q_in_C⟩ C_is_chain.directedOn).2
+        have Q_in_pos_cone : Q ∈ PositiveCones A := by exact C_in_pos_cone Q_in_C
+        unfold PositiveCones at Q_in_pos_cone
+        simp at Q_in_pos_cone
+        have a_in_Q : a ∈ Q := by apply Q_in_pos_cone.1 a_in_sq
+        exact ⟨Q, Q_in_C, a_in_Q⟩
+      . rcases Subsemiring.mem_sSup_of_directedOn ⟨Q, Q_in_C⟩ C_is_chain.directedOn with h
+        rw [h]
+        push_neg
+        intro S S_in_C
+        have S_in_pos_cone : S ∈ PositiveCones A := by exact C_in_pos_cone S_in_C
+        unfold PositiveCones at S_in_pos_cone
+        simp at S_in_pos_cone
+        exact S_in_pos_cone.2
+    . intro L L_in_C
+      exact le_sSup L_in_C
+
+  -- using zorn lemma
+  rcases hne with ⟨B, B_in_pos_cone⟩
+  rcases zorn_nonempty_partialOrder₀ (PositiveCones A) zorn_hypothesis B B_in_pos_cone
+    with ⟨M, M_in_pos_cone, ⟨_, M_is_maximal⟩⟩
+  use M
+  constructor
+  . exact M_in_pos_cone
+  . apply M_is_maximal
