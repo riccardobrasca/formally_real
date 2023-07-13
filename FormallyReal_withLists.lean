@@ -10,7 +10,7 @@ def sum_of_squares {R : Type _} [Semiring R] : List R → R
   | [] => 0
   | (a :: L) => (a ^ 2) + (sum_of_squares L)
 
-def is_sum_of_squares {R : Type _} [Semiring R] (x : R) : Prop := ∃ L : List R, sum_of_squares L = x
+def is_sum_of_squares {R : Type _} [Semiring R] (s : R) : Prop := ∃ L : List R, sum_of_squares L = s
 
 /- A few sanity checks -/
 
@@ -49,13 +49,25 @@ def sum_of_squares_concat {R : Type _} [Semiring R] (L1 L2 : List R) : sum_of_sq
     simp [sum_of_squares]
   done
 
-def sum_of_squares_of_list_div {F : Type _} [Semifield F] (L : List F) (c : F) (h : c ≠ 0) : sum_of_squares (L.map (./c)) = sum_of_squares L / (c^2) := by
+def sum_of_squares_of_list {R : Type _} [Semiring R] (L : List R) : sum_of_squares L = (L.map (.^2)).sum := by
   induction' L with a L ih
   · simp [sum_of_squares]
-  · sorry
+  · rw[sum_of_squares_head_tail, ih]
+    simp [sum_of_squares]
+  done
 
--- **TASK 1** Complete the proof above
-  
+def sum_of_squares_of_list_div {F : Type _} [Semifield F] (L : List F) (c : F) (h : c ≠ 0) : sum_of_squares (L.map (./c)) = sum_of_squares L / (c^2) := by
+  rw [sum_of_squares_of_list]
+  simp [sum_of_squares]
+  have comp : ((fun x => x ^ 2) ∘ (fun x => x / c)) = (fun x => x ^ 2 * (c ^ 2)⁻¹ ) := by 
+    ext x
+    field_simp
+  rw [comp, sum_of_squares_of_list, div_eq_mul_inv, List.sum_map_mul_right]
+  done
+
+def sum_of_squares_erase {R : Type _} [Semiring R] [BEq R] (L : List R) (a : R) (h : a ∈ L): sum_of_squares L = a ^ 2 + sum_of_squares (List.erase L a) := by
+  sorry
+
 /- ## Definition of formally real semirings -/
 
 @[mk_iff]
@@ -64,7 +76,7 @@ class IsFormallyReal (R : Type _) [Semiring R] : Prop where
 
 /- As an example, we show that ordered semirings are formally real. -/
 
--- **TASK 2:** Prove the claim above
+-- **TASK 1:** Prove the claim above
 
 /- ## Properties of formally real semirings 
 
@@ -79,7 +91,7 @@ def one_add_sum_of_squares_neq_zero {R : Type _} [Semiring R] [ntR : Nontrivial 
 
  /- Next, we show that a non-trivial formally real semiring is of characteristic 0. -/
 
- -- **TASK 3:** Prove the claim above
+ -- **TASK 2:** Prove the claim above
 
  /- ## Formally real semifields 
  
@@ -101,13 +113,16 @@ def one_add_sum_of_squares_neq_zero {R : Type _} [Semiring R] [ntR : Nontrivial 
     simp
   have L'' := List.erase L' (x/x)
   have h2 : (x/x) ∈ L' := List.mem_map_of_mem (f := fun y => y/x) (a := x) hx1
-  have hL'' : 1 + sum_of_squares L'' = sum_of_squares L' := sorry
+  have hL'' : sum_of_squares L' = 1 + sum_of_squares L'' := by
+    rw [sum_of_squares_erase]
+    
+    sorry
   rw [hL'] at hL''
   have h3 := h L''
   apply h3
   exact hL''
   
--- **TASK 4:** Complete the proof above (one `sorry` to fill)
+-- **TASK 3:** Complete the proof above (one `sorry` to fill)
 
  /- In particular, **a field `F` is formally real if and only if `-1` is not a sum of squares in `F`**. -/
 
