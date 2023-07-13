@@ -2,6 +2,8 @@
 
 import Mathlib.NumberTheory.Cyclotomic.Basic
 
+open BigOperators
+
 /- ## Sums of squares
 
 To define formally real semirings, we first define what it means to be a sum of squares in a semiring. -/
@@ -10,7 +12,13 @@ def sum_of_squares {R : Type _} [Semiring R] : List R → R
   | [] => 0
   | (a :: L) => (a ^ 2) + (sum_of_squares L)
 
-def is_sum_of_squares {R : Type _} [Semiring R] (s : R) : Prop := ∃ L : List R, sum_of_squares L = s
+lemma sum_of_squares_eq_map_sum {R : Type _} [Semiring R] (L : List R) :
+    sum_of_squares L = (L.map (.^2)).sum := by
+  induction' L with r L hL
+  · simp [sum_of_squares]
+  · simp [hL, sum_of_squares] 
+
+def is_sum_of_squares {R : Type _} [Semiring R] (x : R) : Prop := ∃ L : List R, sum_of_squares L = x
 
 /- A few sanity checks -/
 
@@ -73,6 +81,28 @@ def sum_of_squares_erase {R : Type _} [Semiring R] [BEq R] (L : List R) (a : R) 
 @[mk_iff]
 class IsFormallyReal (R : Type _) [Semiring R] : Prop where
   is_formally_real : ∀ L : List R, sum_of_squares L = 0 → (∀ x ∈ L, x = 0)
+
+lemma IsFormallyReal_iff_Fin (R : Type _) [Semiring R] : IsFormallyReal R ↔
+    ∀ (n : ℕ), ∀ (f : Fin n → R), (∑ i, (f i) ^ 2 = 0) → (∀ i, f i = 0) := by
+  refine' ⟨fun h n f hf i => _, fun h => ⟨fun L => List.ofFnRec (fun n f H a ha => _) L⟩⟩
+  · refine' h.is_formally_real (List.ofFn f) _ (f i) (by simp [List.mem_ofFn])
+    simp [sum_of_squares, sum_of_squares_eq_map_sum, List.sum_ofFn, hf]
+  · rw [sum_of_squares_eq_map_sum, List.map_ofFn, List.sum_ofFn] at H
+    obtain ⟨j, rfl⟩ := (List.mem_ofFn _ _).1 ha
+    exact h n f H j
+
+lemma IsFormallyReal_iff_Multiset (R : Type _) [Semiring R] : IsFormallyReal R ↔
+    ∀ (M : Multiset R), (M.map (.^2)).sum = 0 → (∀ x ∈ M, x = 0) := by
+  refine' ⟨fun h M hM x hx => _, fun h => ⟨fun L hL x hx => _⟩⟩
+  · refine' h.is_formally_real M.toList _ x (Multiset.mem_toList.2 hx)
+    convert hM
+    rw [sum_of_squares_eq_map_sum]
+    conv_rhs => rw [← Multiset.coe_toList M]
+    rw [Multiset.coe_map, Multiset.coe_sum]
+  · refine' h L _ _ (by simp [hx])
+    convert hL
+    simp [sum_of_squares_eq_map_sum]
+    
 
 /- As an example, we show that ordered semirings are formally real. -/
 
