@@ -69,16 +69,9 @@ def sum_of_squares_of_list_div {F : Type _} [Semifield F] (L : List F) (c : F) (
   rw [comp, sum_of_squares_of_list, div_eq_mul_inv, List.sum_map_mul_right]
   done
 
-
-def sum_of_squares_erase {R : Type _} [Semiring R] [BEq R] (L : List R) (a : R) (h : a ∈ L): sum_of_squares L = a ^ 2 + sum_of_squares (List.erase L a) := by
-  classical
-  induction' L with a L' ih
-  · cases h -- Tautological truth since h : a ∈ [] implies that [] = a + []
-  · rw [sum_of_squares_of_list, sum_of_squares_of_list]
-    --rw [← List.sum_map_erase List.map (fun x => x ^ 2) (a :: L')]
-    sorry
-   -- use
-
+def sum_of_squares_erase {R : Type _} [Semiring R] [BEq R] (L : List R) (a : R) (h : a ∈ L) :
+    sum_of_squares L = a ^ 2 + sum_of_squares (List.erase L a) := by
+  sorry
 
 -- **TASK 1:** Complete the proof above
 
