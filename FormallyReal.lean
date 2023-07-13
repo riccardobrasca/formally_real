@@ -196,8 +196,19 @@ lemma is_sum_of_squares_iff_mem_cone_of_squares {A : Type _} [Semiring A] (a : A
     · rw [← h₁, ← h₂]
       simp
 
+theorem cone_of_squares.mem_mul {A : Type _} [Semiring A] {x y : A}
+    (hx : x ∈ cone_of_squares A) (hy : y ∈ cone_of_squares A) :
+    x * y ∈ cone_of_squares A := sorry
+
  /- ## Artin-Schreier theory -/
 
  /- We show that formally real fields admit an ordering, not unique in general.
 
  In particular, **a field `F` is formally real if and only if it admits an ordering.** -/
+
+def PositiveCones (A : Type _) [Ring A] :=
+  { P : Subsemiring A | squares A ⊆ P ∧ -1 ∉ P }
+
+theorem PositiveCones.nonEmpty (A : Type _) [Ring A] [IsFormallyReal A] :
+    Nonempty (PositiveCones A) :=
+  sorry
