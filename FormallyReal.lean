@@ -12,12 +12,6 @@ def sum_of_squares {R : Type _} [Semiring R] : List R → R
   | [] => 0
   | (a :: L) => (a ^ 2) + (sum_of_squares L)
 
-lemma sum_of_squares_eq_map_sum {R : Type _} [Semiring R] (L : List R) :
-    sum_of_squares L = (L.map (.^2)).sum := by
-  induction' L with r L hL
-  · simp [sum_of_squares]
-  · simp [hL, sum_of_squares] 
-
 def is_sum_of_squares {R : Type _} [Semiring R] (x : R) : Prop := ∃ L : List R, sum_of_squares L = x
 
 /- A few sanity checks -/
@@ -88,8 +82,8 @@ lemma IsFormallyReal_iff_Fin (R : Type _) [Semiring R] : IsFormallyReal R ↔
     ∀ (n : ℕ), ∀ (f : Fin n → R), (∑ i, (f i) ^ 2 = 0) → (∀ i, f i = 0) := by
   refine' ⟨fun h n f hf i => _, fun h => ⟨fun L => List.ofFnRec (fun n f H a ha => _) L⟩⟩
   · refine' h.is_formally_real (List.ofFn f) _ (f i) (by simp [List.mem_ofFn])
-    simp [sum_of_squares, sum_of_squares_eq_map_sum, List.sum_ofFn, hf]
-  · rw [sum_of_squares_eq_map_sum, List.map_ofFn, List.sum_ofFn] at H
+    simp [sum_of_squares, sum_of_squares_of_list, List.sum_ofFn, hf]
+  · rw [sum_of_squares_of_list, List.map_ofFn, List.sum_ofFn] at H
     obtain ⟨j, rfl⟩ := (List.mem_ofFn _ _).1 ha
     exact h n f H j
 
@@ -98,12 +92,12 @@ lemma IsFormallyReal_iff_Multiset (R : Type _) [Semiring R] : IsFormallyReal R �
   refine' ⟨fun h M hM x hx => _, fun h => ⟨fun L hL x hx => _⟩⟩
   · refine' h.is_formally_real M.toList _ x (Multiset.mem_toList.2 hx)
     convert hM
-    rw [sum_of_squares_eq_map_sum]
+    rw [sum_of_squares_of_list]
     conv_rhs => rw [← Multiset.coe_toList M]
     rw [Multiset.coe_map, Multiset.coe_sum]
   · refine' h L _ _ (by simp [hx])
     convert hL
-    simp [sum_of_squares_eq_map_sum]
+    simp [sum_of_squares_of_list]
     
 /- As an example, we show that ordered semirings are formally real. -/
 
@@ -141,26 +135,17 @@ def one_add_sum_of_squares_neq_zero {R : Type _} [Semiring R] [ntR : Nontrivial 
   let L' := L.map (./x)
   have hL' : sum_of_squares L' = sum_of_squares L / (x^2) := by
     rw [← sum_of_squares_of_list_div L x hx2]
+  have hx3 : (x / x) ∈ L' := List.mem_map_of_mem (·/x) hx1
+  rw [div_self hx2] at hx3
+  let L'' := List.erase L' 1
   have hL'1 : sum_of_squares L' = 0 := by
-    rw [hL', hL]
-    simp
-  have hx3 : (x / x) ∈ L' := by sorry
-  let L'' := List.erase L' (x / x)
-  have hL'2 : sum_of_squares L' = (x / x)^2 + sum_of_squares L'' := by
-    apply sum_of_squares_erase
-    exact hx3
-  rw [hL'] at hL'1
-  have hL'3 : sum_of_squares L' = 0 := by
     rw [hL',hL]
     simp
-  rw [hL'3] at hL'2
-  have H : 1 + sum_of_squares L'' = 0 := by
-    sorry
-  have H1 := h L''
-  exact H1 H
+  have hL'2 : sum_of_squares L' = 1 + sum_of_squares L'' := by
+    simp [sum_of_squares_erase _ (1 : F) hx3]
+  rw [hL'1] at hL'2
+  exact h L'' hL'2.symm
   done
-
--- **TASK 4:** Complete the proof above (two `sorry` to fill)
 
  /- In particular, **a field `F` is formally real if and only if `-1` is not a sum of squares in `F`**. -/
 
