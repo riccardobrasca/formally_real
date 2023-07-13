@@ -121,8 +121,6 @@ instance {A : Type _} [LinearOrderedRing A] : IsFormallyReal A where
     have : a ^ 2 + sum_of_squares (L.erase a) ≠ 0 := by exact ne_of_gt sum_sq_pos
     contradiction
 
--- **TASK 2:** Prove the claim above
-
 /- ## Properties of formally real semirings
 
 We first want to show that, if `R` is a *non-trivial* formally real *ring*, then `-1` is not a sum of squares in `R`. We deduce this from the more general fact that, if `R` is a formally real nontrivial *semiring*, then there does *not* exist a sum of squares `S` in `R` such that `1 + S = 0`.-/
@@ -136,7 +134,7 @@ def one_add_sum_of_squares_neq_zero {R : Type _} [Semiring R] [ntR : Nontrivial 
 
  /- Next, we show that a non-trivial formally real semiring is of characteristic 0. -/
 
- -- **TASK 3:** Prove the claim above
+ -- **TASK 2:** Prove the claim above
 
  /- ## Formally real semifields
 
