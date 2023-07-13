@@ -101,6 +101,26 @@ lemma IsFormallyReal_iff_Multiset (R : Type _) [Semiring R] : IsFormallyReal R �
     
 /- As an example, we show that ordered semirings are formally real. -/
 
+@[simp]
+lemma sum_sq_nonneg {A : Type _} [LinearOrderedRing A] (L : List A) : 0  ≤ sum_of_squares L := by
+  induction' L with head tail ih
+  . rfl
+  . apply add_nonneg
+    . exact sq_nonneg head
+    . exact ih
+
+instance {A : Type _} [LinearOrderedRing A] : IsFormallyReal A where
+  is_formally_real := fun (L : List A) (sum_sq_zero: sum_of_squares L = 0) ↦ by
+    intro a a_in_L
+    by_contra c
+    have a_sq_pos : 0 < a ^ 2 := by exact Iff.mpr (sq_pos_iff a) c
+    have h : a ^ 2 + sum_of_squares (L.erase a) = sum_of_squares L := by exact Eq.symm (sum_of_squares_erase L a a_in_L)
+    rw [sum_sq_zero] at h
+    have sum_sq_nonneg : 0 ≤ sum_of_squares (L.erase a) := by simp
+    have sum_sq_pos: 0 < a ^ 2 + sum_of_squares (L.erase a) := by exact add_pos_of_pos_of_nonneg a_sq_pos sum_sq_nonneg
+    have : a ^ 2 + sum_of_squares (L.erase a) ≠ 0 := by exact ne_of_gt sum_sq_pos
+    contradiction
+
 -- **TASK 2:** Prove the claim above
 
 /- ## Properties of formally real semirings 
