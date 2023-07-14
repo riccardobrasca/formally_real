@@ -536,7 +536,7 @@ lemma maximal_cone_antisymm {F : Type _} [Field F] [IsFormallyReal F] {x : F}
   . apply Subsemiring.mul_mem _ hxneg hx
 
 noncomputable
-def IsFormallyReal.toTotalPositiveCone {F : Type _} [Field F] [IsFormallyReal F] :
+def IsFormallyReal.toTotalPositiveCone (F : Type _) [Field F] [IsFormallyReal F] :
     Ring.TotalPositiveCone F where
       nonneg := fun x => x ∈ IsFormallyReal.MaximalCone F
       zero_nonneg := Subsemiring.zero_mem _
@@ -564,9 +564,6 @@ def IsFormallyReal.toTotalPositiveCone {F : Type _} [Field F] [IsFormallyReal F]
       nonnegDecidable := Classical.decPred _
       nonneg_total := sorry
 
-theorem final_theorem {F : Type _} [Field F] : IsFormallyReal F ↔ Nonempty (LinearOrderedRing F) := by
-  constructor
-  . sorry
-  . simp
-    intro h
-    sorry
+noncomputable
+def final_def {F : Type _} [Field F] [IsFormallyReal F] : LinearOrderedRing F :=
+  LinearOrderedRing.mkOfPositiveCone (IsFormallyReal.toTotalPositiveCone F)
