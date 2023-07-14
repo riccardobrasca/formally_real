@@ -132,7 +132,7 @@ def one_add_sum_of_squares_neq_zero {R : Type _} [Semiring R] [ntR : Nontrivial 
     CharZero R := by
   apply charZero_of_inj_zero
   intro n hn
-  let f : Fin n → R := fun i => 1
+  let f : Fin n → R := fun _ => 1
   have hf : ∑ i , f i = n := by simp
   rw [← hf] at hn
   have hsq : ∑ i, f i = ∑ i, (f i) ^ 2 := by simp
@@ -565,7 +565,8 @@ def IsFormallyReal.toTotalPositiveCone (F : Type _) [Field F] [IsFormallyReal F]
         simp at final
 
 
-instance LinearOrderedRing.isFormallyReal (A : Type _) [LinearOrderedRing A] : IsFormallyReal A where
+instance LinearOrderedRing.isFormallyReal (A : Type _) [LinearOrderedRing A] :
+    IsFormallyReal A where
   is_formally_real := fun (L : List A) (sum_sq_zero: sum_of_squares L = 0) ↦ by
     intro a a_in_L
     by_contra c
@@ -580,7 +581,8 @@ instance LinearOrderedRing.isFormallyReal (A : Type _) [LinearOrderedRing A] : I
     contradiction
 
 noncomputable
-def IsFormallyReal.toLinearOrderedRing {F : Type _} [Field F] [IsFormallyReal F] : LinearOrderedRing F :=
+def IsFormallyReal.toLinearOrderedRing {F : Type _} [Field F] [IsFormallyReal F] :
+    LinearOrderedRing F :=
   LinearOrderedRing.mkOfPositiveCone (IsFormallyReal.toTotalPositiveCone F)
 
 #print axioms LinearOrderedRing.isFormallyReal
