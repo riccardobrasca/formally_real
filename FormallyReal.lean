@@ -4,8 +4,23 @@ import Mathlib.NumberTheory.Cyclotomic.Basic
 import Mathlib.Order.CompleteLattice
 import Mathlib.Tactic.Polyrith
 import Mathlib.Algebra.Order.Ring.Cone
+import Lean
 
+open Lean Elab Tactic
 open BigOperators
+
+elab "tada" : tactic => do
+  let gs ← getUnsolvedGoals
+  if gs.isEmpty then
+    logInfo "Goals accomplished 🎉"
+  else
+    Term.reportUnsolvedGoals gs
+    throwAbortTactic
+
+
+example : 1 + 1 = 2 := by
+  trivial
+  tada
 
 /- ## Sums of squares
 
