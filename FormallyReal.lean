@@ -116,7 +116,7 @@ lemma sum_sq_nonneg {A : Type _} [LinearOrderedRing A] (L : List A) : 0  ≤ sum
     . exact sq_nonneg head
     . exact ih
 
-instance {A : Type _} [LinearOrderedRing A] : IsFormallyReal A where
+instance aaa (A : Type _) [LinearOrderedRing A] : IsFormallyReal A where
   is_formally_real := fun (L : List A) (sum_sq_zero: sum_of_squares L = 0) ↦ by
     intro a a_in_L
     by_contra c
@@ -563,3 +563,10 @@ def IsFormallyReal.toTotalPositiveCone {F : Type _} [Field F] [IsFormallyReal F]
             contradiction
       nonnegDecidable := Classical.decPred _
       nonneg_total := sorry
+
+theorem final_theorem {F : Type _} [Field F] : IsFormallyReal F ↔ Nonempty (LinearOrderedRing F) := by
+  constructor
+  . sorry
+  . simp
+    intro h
+    sorry
