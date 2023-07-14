@@ -531,7 +531,7 @@ def IsFormallyReal.toTotalPositiveCone {F : Type _} [Field F] [IsFormallyReal F]
       nonneg := fun x => x ∈ IsFormallyReal.MaximalCone F
       zero_nonneg := Subsemiring.zero_mem _
       add_nonneg := Subsemiring.add_mem _
-      nonneg_antisymm := fun hx hy => maximal_cone_antisymm hx hy
+      nonneg_antisymm := fun hx hxneg => maximal_cone_antisymm hx hxneg
       one_nonneg := Subsemiring.one_mem _
       mul_pos := by
         simp
