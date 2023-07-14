@@ -17,7 +17,8 @@ def sum_of_squares {R : Type _} [Semiring R] : List R → R
 
 example : sum_of_squares [1, -2, 3] = 14 := rfl
 
-def is_sum_of_squares {R : Type _} [Semiring R] (x : R) : Prop := ∃ L : List R, sum_of_squares L = x
+def is_sum_of_squares {R : Type _} [Semiring R] (x : R) : Prop :=
+  ∃ L : List R, sum_of_squares L = x
 
 /- A few sanity checks -/
 
@@ -33,7 +34,8 @@ def is_sum_of_squares {R : Type _} [Semiring R] (x : R) : Prop := ∃ L : List R
 
 example : sum_of_squares [1, 2, 3] = 14 := rfl
 
-/- If a list is built by concatenation, we can compute its sum of squares from the sums of squares of each constructor. -/
+/- If a list is built by concatenation, we can compute its sum of squares from the sums of squares
+of each constructor. -/
 
 #eval 0::[1,2,3]
 #eval [1,2,3]++[1,2,3]
@@ -44,7 +46,8 @@ example : sum_of_squares [1, 2, 3] = 14 := rfl
 /- We now give a proof of these results, as well as of other useful facts about sums of squares. -/
 
 @[simp]
-def sum_of_squares_head_tail {R : Type _} [Semiring R] (x : R) (L : List R) : sum_of_squares (x :: L) = (sum_of_squares [x]) + (sum_of_squares L) := by
+def sum_of_squares_head_tail {R : Type _} [Semiring R] (x : R) (L : List R) :
+    sum_of_squares (x :: L) = (sum_of_squares [x]) + (sum_of_squares L) := by
   simp [sum_of_squares]
   done
 
@@ -56,7 +59,8 @@ def sum_of_squares_concat {R : Type _} [Semiring R] (L1 L2 : List R) : sum_of_sq
     simp [sum_of_squares]
   done
 
-def sum_of_squares_of_list {R : Type _} [Semiring R] (L : List R) : sum_of_squares L = (L.map (.^2)).sum := by
+def sum_of_squares_of_list {R : Type _} [Semiring R] (L : List R) :
+    sum_of_squares L = (L.map (.^2)).sum := by
   induction' L with a L ih
   · simp [sum_of_squares]
   · rw[sum_of_squares_head_tail, ih]
@@ -73,7 +77,8 @@ def sum_of_squares_of_list_div {F : Type _} [Semifield F] (L : List F) (c : F) (
   done
 
 
-def sum_of_squares_erase {R : Type _} [Semiring R] [DecidableEq R] (L : List R) (a : R) (h : a ∈ L): sum_of_squares L = a ^ 2 + sum_of_squares (List.erase L a) := by
+def sum_of_squares_erase {R : Type _} [Semiring R] [DecidableEq R] (L : List R) (a : R)
+    (h : a ∈ L) : sum_of_squares L = a ^ 2 + sum_of_squares (List.erase L a) := by
   rw [sum_of_squares_of_list, sum_of_squares_of_list, ← Multiset.coe_sum,
     ← Multiset.coe_sum, ← Multiset.coe_map, ← Multiset.coe_map,  ← Multiset.sum_cons,
     ← Multiset.map_cons (.^2), ← Multiset.cons_erase (show a ∈ (L : Multiset R) from h)]
@@ -118,9 +123,12 @@ lemma sum_sq_nonneg {A : Type _} [LinearOrderedRing A] (L : List A) : 0  ≤ sum
 
 /- ## Properties of formally real semirings
 
-We first want to show that, if `R` is a *non-trivial* formally real *ring*, then `-1` is not a sum of squares in `R`. We deduce this from the more general fact that, if `R` is a formally real nontrivial *semiring*, then there does *not* exist a sum of squares `S` in `R` such that `1 + S = 0`.-/
+We first want to show that, if `R` is a *non-trivial* formally real *ring*, then `-1` is not a sum
+of squares in `R`. We deduce this from the more general fact that, if `R` is a formally real nontrivial *semiring*, then there does *not* exist a sum of squares `S` in `R` such that
+`1 + S = 0`.-/
 
-def one_add_sum_of_squares_neq_zero {R : Type _} [Semiring R] [ntR : Nontrivial R] : IsFormallyReal R → ¬ (∃ L : List R, 1 + sum_of_squares L = 0) := by
+def one_add_sum_of_squares_neq_zero {R : Type _} [Semiring R] [ntR : Nontrivial R] :
+    IsFormallyReal R → ¬ (∃ L : List R, 1 + sum_of_squares L = 0) := by
   intro h ⟨L, hL⟩
   have h1 := h.is_formally_real (1 :: L)
   simp [sum_of_squares] at h1
@@ -153,7 +161,8 @@ def one_add_sum_of_squares_neq_zero {R : Type _} [Semiring R] [ntR : Nontrivial 
 
  We prove that, in a semifield, the converse to `one_add_sum_of_squares_neq_zero` holds, namely: if there is no sum of squares `S` such that `1 + S = 0`, then the semifield `F` is formally real. -/
 
- def sum_of_sq_eq_zero_iff_all_zero {F : Type _} [Semifield F] : ¬(∃ L : List F, 1 + sum_of_squares L = 0) → IsFormallyReal F := by
+ def sum_of_sq_eq_zero_iff_all_zero {F : Type _} [Semifield F] :
+    ¬(∃ L : List F, 1 + sum_of_squares L = 0) → IsFormallyReal F := by
   classical
   intro h
   push_neg at h
@@ -391,7 +400,8 @@ lemma span_cone_union_singleton {F : Type _} [Field F] (P : Subsemiring F)
   done
 
 theorem cone_add_element {F : Type _} [Field F] (P : Subsemiring F) (hP : P ∈ PositiveCones F)
-    (a : F) (h1 : a ∉ P) (h2 : -a ∉ P) : (P < Subsemiring.closure (P ∪ {a})) ∧ (Subsemiring.closure (P ∪ {a}) ∈ PositiveCones F) := by
+    (a : F) (h1 : a ∉ P) (h2 : -a ∉ P) :
+      (P < Subsemiring.closure (P ∪ {a})) ∧ (Subsemiring.closure (P ∪ {a}) ∈ PositiveCones F) := by
   constructor
   · by_contra' h
     have h' : P ≤ Subsemiring.closure (P ∪ {a}) := by
