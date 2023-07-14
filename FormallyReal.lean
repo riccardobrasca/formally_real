@@ -145,16 +145,26 @@ def one_add_sum_of_squares_neq_zero {R : Type _} [Semiring R] [ntR : Nontrivial 
 
  -- **TASK 2:** Prove the claim above
 
- theorem FormallyRealIsOfChar0 {R : Type _} [Semiring R] [hFR : IsFormallyReal R] : CharP R 0 := by
-  constructor
-  intro x
-  constructor
-  · intro h1
-    simp
-    sorry
-  · intro h1
-    simp at h1
-    sorry
+ theorem FormallyRealIsOfChar0 {R : Type _} [Ring R] [Nontrivial R] [hFR : IsFormallyReal R] :
+    CharZero R := by
+  apply charZero_of_inj_zero
+  intro n hn
+  let f : Fin n → R := fun i => 1
+  have hf : ∑ i , f i = n := by simp
+  rw [← hf] at hn
+  have hsq : ∑ i, f i = ∑ i, (f i) ^ 2 := by simp
+  rw [hn] at hsq
+  rw [IsFormallyReal_iff_Fin R] at hFR
+  specialize hFR n f hsq.symm
+  by_contra' h0
+  have hnatpos : 0 < n := by
+    exact Nat.pos_of_ne_zero h0
+  have hFinNN : Nonempty (Fin n) := by
+    rw [← Fin.pos_iff_nonempty]
+    exact hnatpos
+  let i := Classical.choice hFinNN
+  specialize hFR i
+  simp at hFR
 
  /- ## Formally real semifields
 
