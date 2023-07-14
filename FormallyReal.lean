@@ -116,20 +116,6 @@ lemma sum_sq_nonneg {A : Type _} [LinearOrderedRing A] (L : List A) : 0  ≤ sum
     . exact sq_nonneg head
     . exact ih
 
-instance aaa (A : Type _) [LinearOrderedRing A] : IsFormallyReal A where
-  is_formally_real := fun (L : List A) (sum_sq_zero: sum_of_squares L = 0) ↦ by
-    intro a a_in_L
-    by_contra c
-    have a_sq_pos : 0 < a ^ 2 := by exact Iff.mpr (sq_pos_iff a) c
-    have h : a ^ 2 + sum_of_squares (L.erase a) = sum_of_squares L := by
-      exact Eq.symm (sum_of_squares_erase L a a_in_L)
-    rw [sum_sq_zero] at h
-    have sum_sq_nonneg : 0 ≤ sum_of_squares (L.erase a) := by simp
-    have sum_sq_pos: 0 < a ^ 2 + sum_of_squares (L.erase a) := by
-      exact add_pos_of_pos_of_nonneg a_sq_pos sum_sq_nonneg
-    have : a ^ 2 + sum_of_squares (L.erase a) ≠ 0 := by exact ne_of_gt sum_sq_pos
-    contradiction
-
 /- ## Properties of formally real semirings
 
 We first want to show that, if `R` is a *non-trivial* formally real *ring*, then `-1` is not a sum of squares in `R`. We deduce this from the more general fact that, if `R` is a formally real nontrivial *semiring*, then there does *not* exist a sum of squares `S` in `R` such that `1 + S = 0`.-/
@@ -142,9 +128,6 @@ def one_add_sum_of_squares_neq_zero {R : Type _} [Semiring R] [ntR : Nontrivial 
   done
 
  /- Next, we show that a non-trivial formally real semiring is of characteristic 0. -/
-
- -- **TASK 2:** Prove the claim above
-
  theorem FormallyRealIsOfChar0 {R : Type _} [Ring R] [Nontrivial R] [hFR : IsFormallyReal R] :
     CharZero R := by
   apply charZero_of_inj_zero
@@ -581,6 +564,24 @@ def IsFormallyReal.toTotalPositiveCone (F : Type _) [Field F] [IsFormallyReal F]
           apply lt_of_lt_of_eq h'' h'
         simp at final
 
+
+instance LinearOrderedRing.isFormallyReal (A : Type _) [LinearOrderedRing A] : IsFormallyReal A where
+  is_formally_real := fun (L : List A) (sum_sq_zero: sum_of_squares L = 0) ↦ by
+    intro a a_in_L
+    by_contra c
+    have a_sq_pos : 0 < a ^ 2 := by exact Iff.mpr (sq_pos_iff a) c
+    have h : a ^ 2 + sum_of_squares (L.erase a) = sum_of_squares L := by
+      exact Eq.symm (sum_of_squares_erase L a a_in_L)
+    rw [sum_sq_zero] at h
+    have sum_sq_nonneg : 0 ≤ sum_of_squares (L.erase a) := by simp
+    have sum_sq_pos: 0 < a ^ 2 + sum_of_squares (L.erase a) := by
+      exact add_pos_of_pos_of_nonneg a_sq_pos sum_sq_nonneg
+    have : a ^ 2 + sum_of_squares (L.erase a) ≠ 0 := by exact ne_of_gt sum_sq_pos
+    contradiction
+
 noncomputable
-def final_def {F : Type _} [Field F] [IsFormallyReal F] : LinearOrderedRing F :=
+def IsFormallyReal.toLinearOrderedRing {F : Type _} [Field F] [IsFormallyReal F] : LinearOrderedRing F :=
   LinearOrderedRing.mkOfPositiveCone (IsFormallyReal.toTotalPositiveCone F)
+
+#print axioms LinearOrderedRing.isFormallyReal
+#print axioms IsFormallyReal.toLinearOrderedRing
