@@ -511,30 +511,45 @@ def IsFormallyReal.MaximalCone.isPositiveCone (F : Type _) [Field F] [IsFormally
     IsFormallyReal.MaximalCone F ∈ PositiveCones F :=
   (exists_maximal_pos_cone (PositiveCones.nonEmpty F)).choose_spec.1
 
+lemma maximal_cone_antisymm {F : Type _} [Field F] [IsFormallyReal F] {x : F}
+    (hx: x ∈ IsFormallyReal.MaximalCone F) (hxneg: -x ∈ IsFormallyReal.MaximalCone F) :
+    x = 0 := by
+  by_contra c
+  have negone : -1 = (x⁻¹) ^ 2 * ((-x) * x) := by
+    field_simp [c]
+    ring
+  apply (IsFormallyReal.MaximalCone.isPositiveCone F).2
+  rw [negone]
+  apply Subsemiring.mul_mem
+  · apply (IsFormallyReal.MaximalCone.isPositiveCone F).1
+    use x⁻¹
+  . apply Subsemiring.mul_mem _ hxneg hx
+
 noncomputable
 def IsFormallyReal.toTotalPositiveCone {F : Type _} [Field F] [IsFormallyReal F] :
     Ring.TotalPositiveCone F where
       nonneg := fun x => x ∈ IsFormallyReal.MaximalCone F
       zero_nonneg := Subsemiring.zero_mem _
       add_nonneg := Subsemiring.add_mem _
-      nonneg_antisymm := by
-        intro x hx hxneg
-        have hnegsq : (-x) * x ∈ MaximalCone F := Subsemiring.mul_mem _ hxneg hx
-        by_contra' h0
-        have negone : -1 = (x⁻¹) ^ 2 * ((-x) * x) := by
-          field_simp [h0]
-          ring
-        apply (IsFormallyReal.MaximalCone.isPositiveCone F).2
-        rw [negone]
-        apply Subsemiring.mul_mem
-        · apply (IsFormallyReal.MaximalCone.isPositiveCone F).1
-          use x⁻¹
-        · apply Subsemiring.mul_mem _ hxneg hx
+      nonneg_antisymm := fun hx hy => maximal_cone_antisymm hx hy
       one_nonneg := Subsemiring.one_mem _
       mul_pos := by
-        intro x y hx hy
-        simp at *
-        sorry
-
+        simp
+        intro x y hx hxneg hy hyneg
+        constructor
+        . exact Subsemiring.mul_mem (MaximalCone F) hx hy
+        . by_contra hc
+          have hxy : x * y ∈  MaximalCone F := by
+            exact Subsemiring.mul_mem (MaximalCone F) hx hy
+          have hxy_zero : x * y = 0 := by
+            apply maximal_cone_antisymm hxy hc
+          rw [mul_eq_zero] at hxy_zero
+          rcases hxy_zero with hx_zero | hy_zero
+          . rw [hx_zero] at hx hxneg
+            simp at hxneg
+            contradiction
+          . rw [hy_zero] at hy hyneg
+            simp at hyneg
+            contradiction
       nonnegDecidable := Classical.decPred _
       nonneg_total := sorry
