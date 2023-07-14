@@ -17,7 +17,6 @@ elab "tada" : tactic => do
     Term.reportUnsolvedGoals gs
     throwAbortTactic
 
-
 example : 1 + 1 = 2 := by
   trivial
   tada
@@ -64,7 +63,7 @@ of each constructor. -/
 def sum_of_squares_head_tail {R : Type _} [Semiring R] (x : R) (L : List R) :
     sum_of_squares (x :: L) = (sum_of_squares [x]) + (sum_of_squares L) := by
   simp [sum_of_squares]
-  done
+  tada
 
 @[simp]
 def sum_of_squares_concat {R : Type _} [Semiring R] (L1 L2 : List R) : sum_of_squares (L1 ++ L2) = sum_of_squares L1 + sum_of_squares L2 := by
@@ -72,7 +71,7 @@ def sum_of_squares_concat {R : Type _} [Semiring R] (L1 L2 : List R) : sum_of_sq
   · simp [sum_of_squares]
   · rw [List.cons_append, sum_of_squares_head_tail x L, add_assoc, ← ih]
     simp [sum_of_squares]
-  done
+  tada
 
 def sum_of_squares_of_list {R : Type _} [Semiring R] (L : List R) :
     sum_of_squares L = (L.map (.^2)).sum := by
@@ -80,7 +79,7 @@ def sum_of_squares_of_list {R : Type _} [Semiring R] (L : List R) :
   · simp [sum_of_squares]
   · rw[sum_of_squares_head_tail, ih]
     simp [sum_of_squares]
-  done
+  tada
 
 def sum_of_squares_of_list_div {F : Type _} [Semifield F] (L : List F) (c : F) (h : c ≠ 0) : sum_of_squares (L.map (./c)) = sum_of_squares L / (c^2) := by
   rw [sum_of_squares_of_list]
@@ -89,8 +88,7 @@ def sum_of_squares_of_list_div {F : Type _} [Semifield F] (L : List F) (c : F) (
     ext x
     field_simp
   rw [comp, sum_of_squares_of_list, div_eq_mul_inv, List.sum_map_mul_right]
-  done
-
+  tada
 
 def sum_of_squares_erase {R : Type _} [Semiring R] [DecidableEq R] (L : List R) (a : R)
     (h : a ∈ L) : sum_of_squares L = a ^ 2 + sum_of_squares (List.erase L a) := by
@@ -98,6 +96,7 @@ def sum_of_squares_erase {R : Type _} [Semiring R] [DecidableEq R] (L : List R) 
     ← Multiset.coe_sum, ← Multiset.coe_map, ← Multiset.coe_map,  ← Multiset.sum_cons,
     ← Multiset.map_cons (.^2), ← Multiset.cons_erase (show a ∈ (L : Multiset R) from h)]
   simp
+  tada
 
 /- ## Definition of formally real semirings -/
 
@@ -113,6 +112,7 @@ lemma IsFormallyReal_iff_Fin (R : Type _) [Semiring R] : IsFormallyReal R ↔
   · rw [sum_of_squares_of_list, List.map_ofFn, List.sum_ofFn] at H
     obtain ⟨j, rfl⟩ := (List.mem_ofFn _ _).1 ha
     exact h n f H j
+  tada
 
 lemma IsFormallyReal_iff_Multiset (R : Type _) [Semiring R] : IsFormallyReal R ↔
     ∀ (M : Multiset R), (M.map (.^2)).sum = 0 → (∀ x ∈ M, x = 0) := by
@@ -125,6 +125,7 @@ lemma IsFormallyReal_iff_Multiset (R : Type _) [Semiring R] : IsFormallyReal R �
   · refine' h L _ _ (by simp [hx])
     convert hL
     simp [sum_of_squares_of_list]
+  tada
 
 /- As an example, we show that ordered semirings are formally real. -/
 
@@ -135,6 +136,7 @@ lemma sum_sq_nonneg {A : Type _} [LinearOrderedRing A] (L : List A) : 0  ≤ sum
   . apply add_nonneg
     . exact sq_nonneg head
     . exact ih
+  tada
 
 /- ## Properties of formally real semirings
 
@@ -148,7 +150,7 @@ def one_add_sum_of_squares_neq_zero {R : Type _} [Semiring R] [ntR : Nontrivial 
   have h1 := h.is_formally_real (1 :: L)
   simp [sum_of_squares] at h1
   exact h1 hL
-  done
+  tada
 
  /- Next, we show that a non-trivial formally real semiring is of characteristic 0. -/
  theorem FormallyRealIsOfChar0 {R : Type _} [Ring R] [Nontrivial R] [hFR : IsFormallyReal R] :
@@ -171,6 +173,7 @@ def one_add_sum_of_squares_neq_zero {R : Type _} [Semiring R] [ntR : Nontrivial 
   let i := Classical.choice hFinNN
   specialize hFR i
   simp at hFR
+  tada
 
  /- ## Formally real semifields
 
@@ -200,7 +203,7 @@ def one_add_sum_of_squares_neq_zero {R : Type _} [Semiring R] [ntR : Nontrivial 
     simp [sum_of_squares_erase _ (1 : F) hx3]
   rw [hL'1] at hL'2
   exact h L'' hL'2.symm
-  done
+  tada
 
  /- In particular, **a field `F` is formally real if and only if `-1` is not a sum of squares in `F`**. -/
 
@@ -210,7 +213,7 @@ def one_add_sum_of_squares_neq_zero {R : Type _} [Semiring R] [ntR : Nontrivial 
    constructor
    · exact one_add_sum_of_squares_neq_zero
    · exact sum_of_sq_eq_zero_iff_all_zero
-   done
+   tada
 
  theorem formally_real_field_equiv {F : Type _} [Field F] :
     (IsFormallyReal F) ↔ ¬ is_sum_of_squares (-1 : F) := by
@@ -229,6 +232,7 @@ def one_add_sum_of_squares_neq_zero {R : Type _} [Semiring R] [ntR : Nontrivial 
     use L
     rw [add_eq_zero_iff_neg_eq] at hL
     exact hL.symm
+  tada
 
 
  /- ## Positive cones -/
@@ -252,6 +256,7 @@ lemma is_sum_of_squares_iff_mem_cone_of_squares {A : Type _} [Semiring A] (a : A
       simp [sum_of_squares]
     · rw [← h₁, ← h₂]
       simp
+    tada
 
 theorem cone_of_squares.mem_mul {A : Type _} [CommSemiring A] {x y : A}
     (hx : x ∈ cone_of_squares A) (hy : y ∈ cone_of_squares A) :
@@ -282,6 +287,7 @@ theorem cone_of_squares.mem_mul {A : Type _} [CommSemiring A] {x y : A}
   · intro x y z h1 h2
     rw [left_distrib]
     apply AddSubmonoid.add_mem _ h1 h2
+  tada
 
 theorem cone_of_squares_eq_Subsemiring (A : Type _) [CommSemiring A] :
     (Subsemiring.closure (squares A) : Set A) = (cone_of_squares A : Set A) := by
@@ -305,6 +311,7 @@ theorem cone_of_squares_eq_Subsemiring (A : Type _) [CommSemiring A] :
     · exact Subsemiring.zero_mem _
     · intro x y hx hy
       exact Subsemiring.add_mem _ hx hy
+    tada
 
  /- ## Artin-Schreier theory -/
 
@@ -412,7 +419,7 @@ lemma span_cone_union_singleton {F : Type _} [Field F] (P : Subsemiring F)
     apply Subsemiring.subset_closure
     apply Set.mem_union_left
     exact hy
-  done
+  tada
 
 theorem cone_add_element {F : Type _} [Field F] (P : Subsemiring F) (hP : P ∈ PositiveCones F)
     (a : F) (h1 : a ∉ P) (h2 : -a ∉ P) :
@@ -480,7 +487,7 @@ theorem cone_add_element {F : Type _} [Field F] (P : Subsemiring F) (hP : P ∈ 
         rw [← ha] at aux
         exact aux
       exact h2 ha2
-  done
+  tada
 
 theorem exists_maximal_pos_cone {A: Type _} [Ring A] [IsFormallyReal A]
     (hne: Nonempty (PositiveCones A)) :
@@ -520,6 +527,7 @@ theorem exists_maximal_pos_cone {A: Type _} [Ring A] [IsFormallyReal A]
   constructor
   . exact M_in_pos_cone
   . apply M_is_maximal
+  tada
 
 noncomputable
 def IsFormallyReal.MaximalCone (F : Type _) [Field F] [IsFormallyReal F] : Subsemiring F :=
@@ -546,6 +554,7 @@ lemma maximal_cone_antisymm {F : Type _} [Field F] [IsFormallyReal F] {x : F}
   · apply (IsFormallyReal.MaximalCone.isPositiveCone F).1
     use x⁻¹
   . apply Subsemiring.mul_mem _ hxneg hx
+  tada
 
 noncomputable
 def IsFormallyReal.toTotalPositiveCone (F : Type _) [Field F] [IsFormallyReal F] :
@@ -588,7 +597,7 @@ def IsFormallyReal.toTotalPositiveCone (F : Type _) [Field F] [IsFormallyReal F]
         have final : MaximalCone F < MaximalCone F := by
           apply lt_of_lt_of_eq h'' h'
         simp at final
-
+        tada
 
 instance LinearOrderedRing.isFormallyReal (A : Type _) [LinearOrderedRing A] :
     IsFormallyReal A where
@@ -604,6 +613,7 @@ instance LinearOrderedRing.isFormallyReal (A : Type _) [LinearOrderedRing A] :
       exact add_pos_of_pos_of_nonneg a_sq_pos sum_sq_nonneg
     have : a ^ 2 + sum_of_squares (L.erase a) ≠ 0 := by exact ne_of_gt sum_sq_pos
     contradiction
+    tada
 
 noncomputable
 def IsFormallyReal.toLinearOrderedRing {F : Type _} [Field F] [IsFormallyReal F] :
