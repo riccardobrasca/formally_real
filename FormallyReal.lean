@@ -60,20 +60,20 @@ of each constructor. -/
 /- We now give a proof of these results, as well as of other useful facts about sums of squares. -/
 
 @[simp]
-def sum_of_squares_head_tail {R : Type _} [Semiring R] (x : R) (L : List R) :
+lemma sum_of_squares_head_tail {R : Type _} [Semiring R] (x : R) (L : List R) :
     sum_of_squares (x :: L) = (sum_of_squares [x]) + (sum_of_squares L) := by
   simp [sum_of_squares]
   tada
 
 @[simp]
-def sum_of_squares_concat {R : Type _} [Semiring R] (L1 L2 : List R) : sum_of_squares (L1 ++ L2) = sum_of_squares L1 + sum_of_squares L2 := by
+lemma sum_of_squares_concat {R : Type _} [Semiring R] (L1 L2 : List R) : sum_of_squares (L1 ++ L2) = sum_of_squares L1 + sum_of_squares L2 := by
   induction' L1 with x L ih
   · simp [sum_of_squares]
   · rw [List.cons_append, sum_of_squares_head_tail x L, add_assoc, ← ih]
     simp [sum_of_squares]
   tada
 
-def sum_of_squares_of_list {R : Type _} [Semiring R] (L : List R) :
+lemma sum_of_squares_of_list {R : Type _} [Semiring R] (L : List R) :
     sum_of_squares L = (L.map (.^2)).sum := by
   induction' L with a L ih
   · simp [sum_of_squares]
@@ -81,7 +81,7 @@ def sum_of_squares_of_list {R : Type _} [Semiring R] (L : List R) :
     simp [sum_of_squares]
   tada
 
-def sum_of_squares_of_list_div {F : Type _} [Semifield F] (L : List F) (c : F) (h : c ≠ 0) : sum_of_squares (L.map (./c)) = sum_of_squares L / (c^2) := by
+lemma sum_of_squares_of_list_div {F : Type _} [Semifield F] (L : List F) (c : F) (h : c ≠ 0) : sum_of_squares (L.map (./c)) = sum_of_squares L / (c^2) := by
   rw [sum_of_squares_of_list]
   simp [sum_of_squares]
   have comp : ((fun x => x ^ 2) ∘ (fun x => x / c)) = (fun x => x ^ 2 * (c ^ 2)⁻¹ ) := by
@@ -90,7 +90,7 @@ def sum_of_squares_of_list_div {F : Type _} [Semifield F] (L : List F) (c : F) (
   rw [comp, sum_of_squares_of_list, div_eq_mul_inv, List.sum_map_mul_right]
   tada
 
-def sum_of_squares_erase {R : Type _} [Semiring R] [DecidableEq R] (L : List R) (a : R)
+lemma sum_of_squares_erase {R : Type _} [Semiring R] [DecidableEq R] (L : List R) (a : R)
     (h : a ∈ L) : sum_of_squares L = a ^ 2 + sum_of_squares (List.erase L a) := by
   rw [sum_of_squares_of_list, sum_of_squares_of_list, ← Multiset.coe_sum,
     ← Multiset.coe_sum, ← Multiset.coe_map, ← Multiset.coe_map,  ← Multiset.sum_cons,
@@ -144,7 +144,7 @@ We first want to show that, if `R` is a *non-trivial* formally real *ring*, then
 of squares in `R`. We deduce this from the more general fact that, if `R` is a formally real nontrivial *semiring*, then there does *not* exist a sum of squares `S` in `R` such that
 `1 + S = 0`.-/
 
-def one_add_sum_of_squares_neq_zero {R : Type _} [Semiring R] [ntR : Nontrivial R] :
+lemma one_add_sum_of_squares_neq_zero {R : Type _} [Semiring R] [ntR : Nontrivial R] :
     IsFormallyReal R → ¬ (∃ L : List R, 1 + sum_of_squares L = 0) := by
   intro h ⟨L, hL⟩
   have h1 := h.is_formally_real (1 :: L)
@@ -179,7 +179,7 @@ def one_add_sum_of_squares_neq_zero {R : Type _} [Semiring R] [ntR : Nontrivial 
 
  We prove that, in a semifield, the converse to `one_add_sum_of_squares_neq_zero` holds, namely: if there is no sum of squares `S` such that `1 + S = 0`, then the semifield `F` is formally real. -/
 
- def sum_of_sq_eq_zero_iff_all_zero {F : Type _} [Semifield F] :
+ theorem sum_of_sq_eq_zero_iff_all_zero {F : Type _} [Semifield F] :
     ¬(∃ L : List F, 1 + sum_of_squares L = 0) → IsFormallyReal F := by
   classical
   intro h
@@ -533,11 +533,11 @@ noncomputable
 def IsFormallyReal.MaximalCone (F : Type _) [Field F] [IsFormallyReal F] : Subsemiring F :=
   (exists_maximal_pos_cone (PositiveCones.nonEmpty F)).choose
 
-def IsFormallyReal.MaximalCone.isPositiveCone (F : Type _) [Field F] [IsFormallyReal F] :
+lemma IsFormallyReal.MaximalCone.isPositiveCone (F : Type _) [Field F] [IsFormallyReal F] :
     IsFormallyReal.MaximalCone F ∈ PositiveCones F :=
   (exists_maximal_pos_cone (PositiveCones.nonEmpty F)).choose_spec.1
 
-def IsFormallyReal.MaximalCone.isMaximal (F : Type _) [Field F] [IsFormallyReal F] :
+lemma IsFormallyReal.MaximalCone.isMaximal (F : Type _) [Field F] [IsFormallyReal F] :
     ∀ S ∈ PositiveCones F, IsFormallyReal.MaximalCone F ≤ S → S = IsFormallyReal.MaximalCone F :=
   (exists_maximal_pos_cone (PositiveCones.nonEmpty F)).choose_spec.2
 
@@ -622,3 +622,5 @@ def IsFormallyReal.toLinearOrderedRing {F : Type _} [Field F] [IsFormallyReal F]
 
 #print axioms LinearOrderedRing.isFormallyReal
 #print axioms IsFormallyReal.toLinearOrderedRing
+
+#lint
