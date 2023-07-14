@@ -3,6 +3,7 @@
 import Mathlib.NumberTheory.Cyclotomic.Basic
 import Mathlib.Order.CompleteLattice
 import Mathlib.Tactic.Polyrith
+import Mathlib.Algebra.Order.Ring.Cone
 
 open BigOperators
 
@@ -501,3 +502,17 @@ theorem exists_maximal_pos_cone {A: Type _} [Ring A] [IsFormallyReal A]
   constructor
   . exact M_in_pos_cone
   . apply M_is_maximal
+
+
+def IsFormallyReal.toTotalPositiveCone {F : Type _} [Field F] [IsFormallyReal F] :
+    Ring.TotalPositiveCone F where
+      nonneg := sorry
+      pos := sorry
+      pos_iff := sorry
+      zero_nonneg := sorry
+      add_nonneg := sorry
+      nonneg_antisymm := sorry
+      one_nonneg := sorry
+      mul_pos := sorry
+      nonnegDecidable := sorry
+      nonneg_total := sorry
