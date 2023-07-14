@@ -511,6 +511,10 @@ def IsFormallyReal.MaximalCone.isPositiveCone (F : Type _) [Field F] [IsFormally
     IsFormallyReal.MaximalCone F ∈ PositiveCones F :=
   (exists_maximal_pos_cone (PositiveCones.nonEmpty F)).choose_spec.1
 
+def IsFormallyReal.MaximalCone.isMaximal (F : Type _) [Field F] [IsFormallyReal F] :
+    ∀ S ∈ PositiveCones F, IsFormallyReal.MaximalCone F ≤ S → S = IsFormallyReal.MaximalCone F :=
+  (exists_maximal_pos_cone (PositiveCones.nonEmpty F)).choose_spec.2
+
 noncomputable
 def IsFormallyReal.toTotalPositiveCone {F : Type _} [Field F] [IsFormallyReal F] :
     Ring.TotalPositiveCone F where
@@ -537,4 +541,17 @@ def IsFormallyReal.toTotalPositiveCone {F : Type _} [Field F] [IsFormallyReal F]
         sorry
 
       nonnegDecidable := Classical.decPred _
-      nonneg_total := sorry
+      nonneg_total := by
+        simp at *
+        intro a
+        by_contra ha
+        push_neg at ha
+        have hP := cone_add_element (MaximalCone F)
+        specialize hP (IsFormallyReal.MaximalCone.isPositiveCone F) a ha.1 ha.2
+        have h' := IsFormallyReal.MaximalCone.isMaximal F
+        specialize h' (Subsemiring.closure (MaximalCone F ∪ {a}))
+        have h'' := hP.1
+        specialize h' hP.2 hP.1.le
+        have final : MaximalCone F < MaximalCone F := by
+          apply lt_of_lt_of_eq h'' h'
+        simp at final
