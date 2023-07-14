@@ -503,6 +503,13 @@ theorem exists_maximal_pos_cone {A: Type _} [Ring A] [IsFormallyReal A]
   . exact M_in_pos_cone
   . apply M_is_maximal
 
+noncomputable
+def IsFormallyReal.MaximalCone (F : Type _) [Field F] [IsFormallyReal F] : Subsemiring F :=
+  (exists_maximal_pos_cone (PositiveCones.nonEmpty F)).choose
+
+def IsFormallyReal.MaximalCone.isPositiveCone {F : Type _} [Field F] [IsFormallyReal F] :
+    IsFormallyReal.MaximalCone F ∈ PositiveCones F :=
+  (exists_maximal_pos_cone (PositiveCones.nonEmpty F)).choose_spec.1
 
 def IsFormallyReal.toTotalPositiveCone {F : Type _} [Field F] [IsFormallyReal F] :
     Ring.TotalPositiveCone F where
