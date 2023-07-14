@@ -507,19 +507,34 @@ noncomputable
 def IsFormallyReal.MaximalCone (F : Type _) [Field F] [IsFormallyReal F] : Subsemiring F :=
   (exists_maximal_pos_cone (PositiveCones.nonEmpty F)).choose
 
-def IsFormallyReal.MaximalCone.isPositiveCone {F : Type _} [Field F] [IsFormallyReal F] :
+def IsFormallyReal.MaximalCone.isPositiveCone (F : Type _) [Field F] [IsFormallyReal F] :
     IsFormallyReal.MaximalCone F ∈ PositiveCones F :=
   (exists_maximal_pos_cone (PositiveCones.nonEmpty F)).choose_spec.1
 
+noncomputable
 def IsFormallyReal.toTotalPositiveCone {F : Type _} [Field F] [IsFormallyReal F] :
     Ring.TotalPositiveCone F where
-      nonneg := sorry
-      pos := sorry
-      pos_iff := sorry
-      zero_nonneg := sorry
-      add_nonneg := sorry
-      nonneg_antisymm := sorry
-      one_nonneg := sorry
-      mul_pos := sorry
-      nonnegDecidable := sorry
+      nonneg := fun x => x ∈ IsFormallyReal.MaximalCone F
+      zero_nonneg := Subsemiring.zero_mem _
+      add_nonneg := Subsemiring.add_mem _
+      nonneg_antisymm := by
+        intro x hx hxneg
+        have hnegsq : (-x) * x ∈ MaximalCone F := Subsemiring.mul_mem _ hxneg hx
+        by_contra' h0
+        have negone : -1 = (x⁻¹) ^ 2 * ((-x) * x) := by
+          field_simp [h0]
+          ring
+        apply (IsFormallyReal.MaximalCone.isPositiveCone F).2
+        rw [negone]
+        apply Subsemiring.mul_mem
+        · apply (IsFormallyReal.MaximalCone.isPositiveCone F).1
+          use x⁻¹
+        · apply Subsemiring.mul_mem _ hxneg hx
+      one_nonneg := Subsemiring.one_mem _
+      mul_pos := by
+        intro x y hx hy
+        simp at *
+        sorry
+
+      nonnegDecidable := Classical.decPred _
       nonneg_total := sorry
