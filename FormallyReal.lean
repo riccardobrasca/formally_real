@@ -120,10 +120,12 @@ instance {A : Type _} [LinearOrderedRing A] : IsFormallyReal A where
     intro a a_in_L
     by_contra c
     have a_sq_pos : 0 < a ^ 2 := by exact Iff.mpr (sq_pos_iff a) c
-    have h : a ^ 2 + sum_of_squares (L.erase a) = sum_of_squares L := by exact Eq.symm (sum_of_squares_erase L a a_in_L)
+    have h : a ^ 2 + sum_of_squares (L.erase a) = sum_of_squares L := by
+      exact Eq.symm (sum_of_squares_erase L a a_in_L)
     rw [sum_sq_zero] at h
     have sum_sq_nonneg : 0 ≤ sum_of_squares (L.erase a) := by simp
-    have sum_sq_pos: 0 < a ^ 2 + sum_of_squares (L.erase a) := by exact add_pos_of_pos_of_nonneg a_sq_pos sum_sq_nonneg
+    have sum_sq_pos: 0 < a ^ 2 + sum_of_squares (L.erase a) := by
+      exact add_pos_of_pos_of_nonneg a_sq_pos sum_sq_nonneg
     have : a ^ 2 + sum_of_squares (L.erase a) ≠ 0 := by exact ne_of_gt sum_sq_pos
     contradiction
 
@@ -480,7 +482,6 @@ theorem exists_maximal_pos_cone {A: Type _} [Ring A] [IsFormallyReal A]
         exact S_in_pos_cone.2
     . intro L L_in_C
       exact le_sSup L_in_C
-
   -- using zorn lemma
   rcases hne with ⟨B, B_in_pos_cone⟩
   rcases zorn_nonempty_partialOrder₀ (PositiveCones A) zorn_hypothesis B B_in_pos_cone
