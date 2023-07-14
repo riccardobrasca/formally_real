@@ -116,7 +116,7 @@ lemma sum_sq_nonneg {A : Type _} [LinearOrderedRing A] (L : List A) : 0  ≤ sum
     . exact sq_nonneg head
     . exact ih
 
-instance {A : Type _} [LinearOrderedRing A] : IsFormallyReal A where
+instance aaa (A : Type _) [LinearOrderedRing A] : IsFormallyReal A where
   is_formally_real := fun (L : List A) (sum_sq_zero: sum_of_squares L = 0) ↦ by
     intro a a_in_L
     by_contra c
@@ -145,16 +145,26 @@ def one_add_sum_of_squares_neq_zero {R : Type _} [Semiring R] [ntR : Nontrivial 
 
  -- **TASK 2:** Prove the claim above
 
- theorem FormallyRealIsOfChar0 {R : Type _} [Semiring R] [hFR : IsFormallyReal R] : CharP R 0 := by
-  constructor
-  intro x
-  constructor
-  · intro h1
-    simp
-    sorry
-  · intro h1
-    simp at h1
-    sorry
+ theorem FormallyRealIsOfChar0 {R : Type _} [Ring R] [Nontrivial R] [hFR : IsFormallyReal R] :
+    CharZero R := by
+  apply charZero_of_inj_zero
+  intro n hn
+  let f : Fin n → R := fun i => 1
+  have hf : ∑ i , f i = n := by simp
+  rw [← hf] at hn
+  have hsq : ∑ i, f i = ∑ i, (f i) ^ 2 := by simp
+  rw [hn] at hsq
+  rw [IsFormallyReal_iff_Fin R] at hFR
+  specialize hFR n f hsq.symm
+  by_contra' h0
+  have hnatpos : 0 < n := by
+    exact Nat.pos_of_ne_zero h0
+  have hFinNN : Nonempty (Fin n) := by
+    rw [← Fin.pos_iff_nonempty]
+    exact hnatpos
+  let i := Classical.choice hFinNN
+  specialize hFR i
+  simp at hFR
 
  /- ## Formally real semifields
 
@@ -515,31 +525,46 @@ def IsFormallyReal.MaximalCone.isMaximal (F : Type _) [Field F] [IsFormallyReal 
     ∀ S ∈ PositiveCones F, IsFormallyReal.MaximalCone F ≤ S → S = IsFormallyReal.MaximalCone F :=
   (exists_maximal_pos_cone (PositiveCones.nonEmpty F)).choose_spec.2
 
+lemma maximal_cone_antisymm {F : Type _} [Field F] [IsFormallyReal F] {x : F}
+    (hx: x ∈ IsFormallyReal.MaximalCone F) (hxneg: -x ∈ IsFormallyReal.MaximalCone F) :
+    x = 0 := by
+  by_contra c
+  have negone : -1 = (x⁻¹) ^ 2 * ((-x) * x) := by
+    field_simp [c]
+    ring
+  apply (IsFormallyReal.MaximalCone.isPositiveCone F).2
+  rw [negone]
+  apply Subsemiring.mul_mem
+  · apply (IsFormallyReal.MaximalCone.isPositiveCone F).1
+    use x⁻¹
+  . apply Subsemiring.mul_mem _ hxneg hx
+
 noncomputable
-def IsFormallyReal.toTotalPositiveCone {F : Type _} [Field F] [IsFormallyReal F] :
+def IsFormallyReal.toTotalPositiveCone (F : Type _) [Field F] [IsFormallyReal F] :
     Ring.TotalPositiveCone F where
       nonneg := fun x => x ∈ IsFormallyReal.MaximalCone F
       zero_nonneg := Subsemiring.zero_mem _
       add_nonneg := Subsemiring.add_mem _
-      nonneg_antisymm := by
-        intro x hx hxneg
-        have hnegsq : (-x) * x ∈ MaximalCone F := Subsemiring.mul_mem _ hxneg hx
-        by_contra' h0
-        have negone : -1 = (x⁻¹) ^ 2 * ((-x) * x) := by
-          field_simp [h0]
-          ring
-        apply (IsFormallyReal.MaximalCone.isPositiveCone F).2
-        rw [negone]
-        apply Subsemiring.mul_mem
-        · apply (IsFormallyReal.MaximalCone.isPositiveCone F).1
-          use x⁻¹
-        · apply Subsemiring.mul_mem _ hxneg hx
+      nonneg_antisymm := fun hx hxneg => maximal_cone_antisymm hx hxneg
       one_nonneg := Subsemiring.one_mem _
       mul_pos := by
-        intro x y hx hy
-        simp at *
-        sorry
-
+        simp
+        intro x y hx hxneg hy hyneg
+        constructor
+        . exact Subsemiring.mul_mem (MaximalCone F) hx hy
+        . by_contra hc
+          have hxy : x * y ∈  MaximalCone F := by
+            exact Subsemiring.mul_mem (MaximalCone F) hx hy
+          have hxy_zero : x * y = 0 := by
+            apply maximal_cone_antisymm hxy hc
+          rw [mul_eq_zero] at hxy_zero
+          rcases hxy_zero with hx_zero | hy_zero
+          . rw [hx_zero] at hx hxneg
+            simp at hxneg
+            contradiction
+          . rw [hy_zero] at hy hyneg
+            simp at hyneg
+            contradiction
       nonnegDecidable := Classical.decPred _
       nonneg_total := by
         simp at *
@@ -555,3 +580,7 @@ def IsFormallyReal.toTotalPositiveCone {F : Type _} [Field F] [IsFormallyReal F]
         have final : MaximalCone F < MaximalCone F := by
           apply lt_of_lt_of_eq h'' h'
         simp at final
+
+noncomputable
+def final_def {F : Type _} [Field F] [IsFormallyReal F] : LinearOrderedRing F :=
+  LinearOrderedRing.mkOfPositiveCone (IsFormallyReal.toTotalPositiveCone F)
