@@ -142,6 +142,17 @@ def one_add_sum_of_squares_neq_zero {R : Type _} [Semiring R] [ntR : Nontrivial 
 
  -- **TASK 2:** Prove the claim above
 
+ theorem FormallyRealIsOfChar0 {R : Type _} [Semiring R] [hFR : IsFormallyReal R] : CharP R 0 := by
+  constructor
+  intro x
+  constructor
+  · intro h1
+    simp
+    sorry
+  · intro h1
+    simp at h1
+    sorry
+
  /- ## Formally real semifields
 
  We prove that, in a semifield, the converse to `one_add_sum_of_squares_neq_zero` holds, namely: if there is no sum of squares `S` such that `1 + S = 0`, then the semifield `F` is formally real. -/
